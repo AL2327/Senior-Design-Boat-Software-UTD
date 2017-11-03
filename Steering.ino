@@ -26,7 +26,7 @@ void Steering(double courseToWaypoint) {
     /*STEERING CODE*/
   PIDRudder.Compute();          // PID computation   
   pos = map(pidoutput, 0, 255, 0, 180);  //map PID output(double) to pos(integer) range
-  pos = constrain(pos, 60, 120);        //contrain the rudder to +/- 45 deg. 
+  pos = constrain(pos, 60, 120);        //contrain the rudder to +/- 30 deg. 
   Rudder.write(pos);              // tell servo to go to position in variable 'pos'  
   /*END STEERING CODE*/
 }
