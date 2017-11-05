@@ -29,16 +29,16 @@ float Resistance;
 float steinhart;
 
 //variables for temperature and salinity sensors
-float temperature = 0;
-float humidity = 0;
-float dewpoint = 0;
+float temperature;
+float humidity;
+float dewpoint;
 int SalReading;
 
 //variable for water level sensor
-int FloatSwitch = 1;
+int FloatSwitch;
 
 //variable to assign a "state of charge designator.
-int BatterySOC = 1;
+int BatterySOC;
 
 //Variables for voltage input calculation
 float Vout = 0.0;
@@ -61,19 +61,20 @@ struct SEND_DATA_STRUCTURE {
   //THIS MUST BE EXACTLY THE SAME ON THE OTHER MICROCONTROLLER
 
   //variables for temperature and salinity sensors
-  float temperature = 0;
-  float humidity = 0;
-  float dewpoint = 0;
+  float temperature;
+  float humidity;
+  float dewpoint;
+  float steinhart;
   int SalReading;
 
   //variables for voltage
-  float Vin = 0.0;
+  float Vin;
 
   //variable for water level sensor
-  int FloatSwitch = 1;
+  int FloatSwitch;
 
   //variable to assign a "state of charge designator.
-  int BatterySOC = 1;
+  int BatterySOC;
 };
 
 //give a name to the group of data
@@ -104,14 +105,14 @@ void loop(void)
 
   //Read and calculate analog NTC thermisitor
   ADCvalue = analogRead(NTCPin);
-  Serial.print("Analog value ");
-  Serial.print(ADCvalue);
-  Serial.print(" = ");
+  //Serial.print("Analog value ");
+  //Serial.print(ADCvalue);
+  //Serial.print(" = ");
   //convert this ADC value into resistance
   Resistance = (1023 / ADCvalue) - 1;
   Resistance = SERIESRESISTOR / Resistance;
-  Serial.print(Resistance);
-  Serial.println(" Ohm");
+  //Serial.print(Resistance);
+  //Serial.println(" Ohm");
   //calculate temperature using steinhart formula
   steinhart = Resistance / NOMINAL_RESISTANCE; // (R/Ro)
   steinhart = log(steinhart); // ln(R/Ro)
@@ -120,7 +121,7 @@ void loop(void)
   steinhart = 1.0 / steinhart; // Invert
   steinhart -= 273.15; // convert to C
 
-  Serial.print("Temperature ");
+  Serial.print("Water Temperature ");
   Serial.print(steinhart);
   Serial.println(" oC");
   //end thermristor calculations and output
@@ -137,11 +138,11 @@ void loop(void)
   Serial.print(" C");
 
   //Read salinity sensor
-  SalReading = analogRead(salinity);
-  float sal = SalReading * (5.0 / 1023.0);
+  float sal = analogRead(salinity);
+  SalReading = sal * (5.0 / 1023.0);
   Serial.println(" ");
   Serial.println("Salinity: ");
-  Serial.print( sal);
+  Serial.print(SalReading);
   Serial.println(" ppt");
 
   //read float switch state
@@ -182,6 +183,10 @@ else if (Vin <= 11.95 && Vin > 11.66) {
 else if (Vin <= 1165) {
   BatterySOC = 4; // our battery is under 20% charged. This is critically low.
 }
+
+  Serial.println("Battery State of Charge: 1: >80%, 2: 40-80%, 3: 20-40%, 4: <20%");
+  Serial.print(BatterySOC);
+  Serial.println("");
 
 ET.sendData();   //Send all our data over the serial port to teensy
 

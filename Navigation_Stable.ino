@@ -9,6 +9,7 @@
 #include <PID_v1.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_FONA.h>
+#include <EasyTransfer.h>
 
 
 
@@ -53,28 +54,77 @@ double Heading = 0; //Current vessel heading in degress.
 /*THROTTLE VARIABLES*/
 int THRT = 180; //variable to stor commanded throttle posistion.
 
-//Fona Variables
+/*Fona Variables*/
 char replybuffer[255];  // this is a large buffer for replies
 uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout = 0);
 uint8_t type;
 
+/*MCU to MCU Easy transfer variables AKA: Sensor Variables*/
+//variables for temperature and salinity sensors
+float temperature;
+float humidity;
+float dewpoint;
+float steinhart;
+int SalReading;
+
+//variables for voltage
+float Vin;
+
+//variable for water level sensor
+int FloatSwitch;
+
+//variable to assign a "state of charge designator.
+int BatterySOC;
+
 /******************************/
 
-// The TinyGPS++ object 
+Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fona
+
+// The TinyGPS++ object
 TinyGPSPlus gps;
+
+// The serial connection to the GPS device
+#define ss Serial1
 
 //Servo Object for Steering
 Servo Rudder;
+
 //Servo Object for Throttle
 Servo Throttle;
 
 // Define PID controller for rudder
 PID PIDRudder(&Heading, &pidoutput, &courseToWaypoint, Kp, Ki, Kd, DIRECT );
 
-// The serial connection to the GPS device
-#define ss Serial1
 
-Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fona
+//**********EASY TRANFER SET UP**********
+//create object for mcu to mcu serial communication
+EasyTransfer ET;
+
+struct RECEIVE_DATA_STRUCTURE {
+  //put your variable definitions here for the data you want to send
+  //THIS MUST BE EXACTLY THE SAME ON THE OTHER MICROCONTROLLER
+
+  //variables for temperature and salinity sensors
+  float temperature;
+  float humidity;
+  float dewpoint;
+  float steinhart;
+  int SalReading;
+
+  //variables for voltage
+  float Vin;
+
+  //variable for water level sensor
+  int FloatSwitch;
+
+  //variable to assign a "state of charge designator.
+  int BatterySOC;
+};
+
+//give a name to the group of data
+RECEIVE_DATA_STRUCTURE sensorData;
+
+//***************************************
 
 Scheduler runner;
 // Callback methods prototypes
@@ -83,8 +133,8 @@ void t2Callback();
 void t3Callback();
 
 // Tasks
-Task t1(1000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to check IMU
-Task t2(1000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task to steer vessel and set throttle
+Task t1(500, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to check IMU
+Task t2(1000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task set throttle
 Task t3(60000, TASK_FOREVER, &t3Callback, &runner, true); //adding task to talk to fona
 
 void t1Callback() {
@@ -94,14 +144,15 @@ void t1Callback() {
 }
 
 void t2Callback() {
-  Serial.print("Steering PID/Throttle Setting:");
-  Serial.println(millis());
-  Steering(courseToWaypoint);
+  Serial.print("Throttle Setting:");
+  //Serial.println(millis());
+  //Steering(courseToWaypoint);
   Motor(THRT);
 }
 
 void t3Callback() {
   //FONA('s');
+  sensors(); 
 }
 
 void setup()
@@ -110,30 +161,33 @@ void setup()
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
 
-  Serial.println("Program Begin..."); 
-  delay(500);
-  
-  /* Initialise the imu sensors */
-  Serial.println("IMU Initialise..."); 
-  delay(500);  
-  initSensors();
-  
-  /* Initialise Waypoint Array */
-  Serial.println("WAYPOINT Setup"); 
-  delay(500);
-  Waypoint(); 
+  //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
+  ET.begin(details(sensorData), &Serial3);
 
-   /* Initialise Rudder */
+  Serial.println("Program Begin...");
+  delay(500);
+
+  /* Initialise the imu sensors */
+  Serial.println("IMU Initialise...");
+  delay(500);
+  initSensors();
+
+  /* Initialise Waypoint Array */
+  Serial.println("WAYPOINT Setup");
+  delay(500);
+  Waypoint();
+
+  /* Initialise Rudder */
   Rudder.attach(35);  // attaches the servo on pin 35 to the servo object
 
   Rudder.write(pos);  //send rudder to mid position
-  
-  Serial.println("Rudder Amidships.  3 Second Hold."); 
+
+  Serial.println("Rudder Amidships.  3 Second Hold.");
   delay(3000);      // wait for 3 seconds after rudder moves.
-  
-  Serial.println("Rudder Sweep in 3 seconds. KEEP CLEAR!"); 
-  delay(3000); 
-  
+
+  Serial.println("Rudder Sweep in 3 seconds. KEEP CLEAR!");
+  delay(3000);
+
   for (pos = 45; pos <= 135; pos += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
@@ -143,29 +197,29 @@ void setup()
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
   }
-  pos=90;
+  pos = 90;
   Rudder.write(pos);  //send rudder to mid position
-  delay(1000); 
-  
-  
+  delay(1000);
+
+
   /* Initialize Throttle*/
-  Serial.println("Throttle Setup"); 
-  delay(500);  
+  Serial.println("Throttle Setup");
+  delay(500);
   Throttle.attach(36); //attatch throttle to pin 36 to the servo object.
   Throttle.write(THRT); //send command to set throttle to 0.
-  Serial.println("Throttle Set to ZERO"); 
+  Serial.println("Throttle Set to ZERO");
 
   /* Initialize Steering PID*/
-  Serial.println("Steering PID Set to AUTOMATIC"); 
-  delay(500);  
+  Serial.println("Steering PID Set to AUTOMATIC");
+  delay(500);
   PIDRudder.SetMode(AUTOMATIC);
 
   /* Initialize Fona */
-  Serial.println("Starting FONA...");   
+  Serial.println("Starting FONA...");
   fonasetup();
-  
+
   /* Initialize Scheduler */
-  Serial.println("Task Handler Start Time Set: ");  
+  Serial.println("Task Handler Start Time Set: ");
   runner.startNow();  //set point-in-time for scheduling start.
   Serial.println(millis());
 
@@ -173,14 +227,35 @@ void setup()
 
 void loop()
 {
+
+  /*GET GPS*/
   getGPS();
-    
+  /*End GPS*/
+
+
   /*STEERING CODE*/
-  //  PIDRudder.Compute();          // PID computation
-  //  pos = map(pidoutput, 0, 255, 0, 180);  //map PID output(double) to pos(integer) range
-  //  pos = constrain(pos, 60, 120);        //contrain the rudder to +/- 45 deg.
-  //  Rudder.write(pos);              // tell servo to go to position in variable 'pos'
+  PIDRudder.Compute();          // PID computation
+  pos = map(pidoutput, 0, 255, 0, 180);  //map PID output(double) to pos(integer) range
+  pos = constrain(pos, 60, 120);        //contrain the rudder to +/- 30 deg.
+  Rudder.write(pos);              // tell servo to go to position in variable 'pos'
   /*END STEERING CODE*/
+
+  /*GET DATA FROM SENSORS*/
+  if (ET.receiveData()) {
+    //this is how you access the variables. [name of the group].[variable name]
+    //variables for temperature and salinity sensors
+    temperature = sensorData.temperature;
+    humidity = sensorData.humidity;
+    dewpoint = sensorData.dewpoint;
+    steinhart = sensorData.steinhart;
+    SalReading = sensorData.SalReading;
+    Vin = sensorData.Vin;
+    FloatSwitch = sensorData.FloatSwitch;
+    BatterySOC = BatterySOC;
+  }
+
+
+  /*STEERING CODE*/
 
   runner.execute();
 }
