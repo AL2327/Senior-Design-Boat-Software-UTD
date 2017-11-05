@@ -52,10 +52,10 @@ void fonasetup() {
   // the following line then redirects over SSL will be followed.
   //fona.setHTTPSRedirect(true);
 
-  printMenu();
+  //printMenu();
 }
 
-void printMenu(void) {
+/*void printMenu(void) {
   Serial.println(F("-------------------------------------"));
   Serial.println(F("[?] Print this menu"));
   Serial.println(F("[a] read the ADC 2.8V max (FONA800 & 808)"));
@@ -119,5 +119,5 @@ void printMenu(void) {
   Serial.println(F("-------------------------------------"));
   Serial.println(F(""));
 
-}
+}*/
 

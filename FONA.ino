@@ -1,18 +1,19 @@
-void FONA(){
-    Serial.print(F("FONA> "));
+void FONA(char command){
+    /*Serial.print(F("FONA> "));
   while (! Serial.available() ) {
     if (fona.available()) {
       Serial.write(fona.read());
     }
-  }
+  }*/
 
-  char command = Serial.read();
+  //char command = Serial.read()
+  //char command = 's';
   Serial.println(command);
 
 
   switch (command) {
     case '?': {
-        printMenu();
+//        printMenu();
         break;
       }
 
@@ -394,14 +395,30 @@ void FONA(){
 
     case 's': {
         // send an SMS!
-        char sendto[21], message[141];
+
+        String msg1 = String(Heading);
+        String msg2 = String(courseToWaypoint, 6);
+        String msg3 = String(distanceToWaypoint, 6);
+        String msg4 = String(WaypointLAT[0], 6);
+        String msg5 = String(WaypointLONG[0], 6);
+        
+        String msg = "Heading: " + msg1 + " " + "Coursetowaypoint: " + msg2 + " " + "DistacetoWaypoint: " + msg3 + " " + "Latitude: " + msg4 + " " + "Longitude: "+ msg5;
+        
+        char sendto[21] = "4698883192", message[141] ;
+        for(int i = 0; i < msg.length() ; i++)
+        {
+            msg.toCharArray(message, 141);
+            
+            Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+            Serial.println(message);
+        }
         flushSerial();
-        Serial.print(F("Send to #"));
+        /*Serial.print(F("Send to #"));
         readline(sendto, 20);
         Serial.println(sendto);
         Serial.print(F("Type out one-line message (140 char): "));
         readline(message, 140);
-        Serial.println(message);
+        Serial.println(message);*/
         if (! fona.sendSMS(sendto, message)) {
           Serial.println(F("Failed"));
         } else {
@@ -635,7 +652,7 @@ void FONA(){
 
     default: {
         Serial.println(F("Unknown command"));
-        printMenu();
+        //printMenu();
         break;
       }
   }
@@ -710,4 +727,4 @@ uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout) {
   buff[buffidx] = 0;  // null term
   return buffidx;
 }
-
+ 

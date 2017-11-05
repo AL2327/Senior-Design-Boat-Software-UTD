@@ -4,8 +4,7 @@ void getGPS()
 /**************************************************************************/
 /* GPS SECTION */
 /**************************************************************************/
-//  Serial.print("TEST TEST TEST");
-//  Serial.print("");
+
     
   // Dispatch incoming characters
   while (ss.available() > 0)
@@ -23,51 +22,51 @@ void getGPS()
     //Serial.print(F(" billionths],  Raw Long="));
     //Serial.print(gps.location.rawLng().negative ? "-" : "+");
     //Serial.print(gps.location.rawLng().deg);
-    ///Serial.print("[+");
+    //Serial.print("[+");
     //Serial.print(gps.location.rawLng().billionths);
     //Serial.print(F(" billionths],  Lat="));
-    //Serial.print(F(" Lat="));
-    //Serial.print(gps.location.lat(), 6);
-    //Serial.print(F(" Long="));
-    //Serial.println(gps.location.lng(), 6);
-    //Serial.print("");    
+    Serial.print(F(" Lat="));
+    Serial.print(gps.location.lat(), 6);
+    Serial.print(F(" Long="));
+    Serial.println(gps.location.lng(), 6);
+    Serial.print("");    
   }
 
   else if (gps.date.isUpdated())
   {
-    //Serial.print(F("DATE: "));
+    Serial.print(F("DATE: "));
     //Serial.print(gps.date.age());
     //Serial.print(F("ms Raw="));
     //Serial.print(gps.date.value());
-    //Serial.print(F(" Year="));
-    //Serial.print(gps.date.year());
-    //Serial.print(F(" Month="));
-    //Serial.print(gps.date.month());
-    //Serial.print(F(" Day="));
-    //Serial.println(gps.date.day());
-    //Serial.print("");
+    Serial.print(F(" Year="));
+    Serial.print(gps.date.year());
+    Serial.print(F(" Month="));
+    Serial.print(gps.date.month());
+    Serial.print(F(" Day="));
+    Serial.println(gps.date.day());
+    Serial.print("");
   }
 
   else if (gps.time.isUpdated())
   {
-    //Serial.print(F("TIME: "));
+    Serial.print(F("TIME: "));
     //Serial.print(gps.time.age());
     //Serial.print(F("ms Raw="));
-    //Serial.print(gps.time.value());
-    //Serial.print(F(" Hour="));
-    //Serial.print(gps.time.hour());
-    //Serial.print(F(" Minute="));
-    //Serial.print(gps.time.minute());
-    //Serial.print(F(" Second="));
+    Serial.print(gps.time.value());
+    Serial.print(F(" Hour="));
+    Serial.print(gps.time.hour());
+    Serial.print(F(" Minute="));
+    Serial.print(gps.time.minute());
+    Serial.print(F(" Second="));
     //Serial.print(gps.time.second());
     //Serial.print(F(" Hundredths="));
     //Serial.println(gps.time.centisecond());
-    //Serial.print("");
+    Serial.print("");
   }
 
   else if (gps.speed.isUpdated())
   {
-    //Serial.print(F("SPEED: "));
+    Serial.print(F("SPEED: "));
     //Serial.print(gps.speed.age());
     //Serial.print(F("ms Raw="));
     //Serial.print(gps.speed.value());
@@ -77,20 +76,20 @@ void getGPS()
     //Serial.print(gps.speed.mph());
     //Serial.print(F(" m/s="));
     //Serial.print(gps.speed.mps());
-    //Serial.print(F(" km/h="));
-    //Serial.println(gps.speed.kmph());
-    //Serial.print("");
+    Serial.print(F(" km/h="));
+    Serial.println(gps.speed.kmph());
+    Serial.print("");
   }
 
   else if (gps.course.isUpdated())
   {
-    //Serial.print(F("COURSE: "));
+    Serial.print(F("COURSE: "));
     //Serial.print(gps.course.age());
     //Serial.print(F("ms Raw="));
-    //Serial.print(gps.course.value());
-    //Serial.print(F(" Deg="));
-    //Serial.println(gps.course.deg());
-    //Serial.print("");
+    Serial.print(gps.course.value());
+    Serial.print(F(" Deg="));
+    Serial.println(gps.course.deg());
+    Serial.print("");
   }
 
   else if (gps.altitude.isUpdated())
@@ -112,11 +111,11 @@ void getGPS()
 
   else if (gps.satellites.isUpdated())
   {
-    //Serial.print(F("SATELLITES Fix: "));
-    //Serial.print(gps.satellites.age());
-    //Serial.print(F("ms Value="));
-    //Serial.println(gps.satellites.value());
-    //Serial.print("");
+    Serial.print(F("SATELLITES Fix: "));
+    Serial.print(gps.satellites.age());
+    Serial.print(F("ms Value="));
+    Serial.println(gps.satellites.value());
+    Serial.print("");
   }
 
   //else if (gps.hdop.isUpdated())
@@ -127,8 +126,8 @@ void getGPS()
   //  Serial.println(gps.hdop.value());
   //}
 
-  else if (millis() - last > 1000)
-  {
+ //else if (millis() - last > 1000)
+ // {
     Serial.println();
     if (gps.location.isValid())
     {
@@ -136,24 +135,24 @@ void getGPS()
         TinyGPSPlus::distanceBetween(
           gps.location.lat(),
           gps.location.lng(),
-          WaypointLAT[1], 
-          WaypointLONG[1]);
+          WaypointLAT[0], 
+          WaypointLONG[0]);
       courseToWaypoint =
         TinyGPSPlus::courseTo(
           gps.location.lat(),
           gps.location.lng(),
-          WaypointLAT[1], 
-          WaypointLONG[1]);
+          WaypointLAT[0], 
+          WaypointLONG[0]);
 
-      Serial.print(F("Waypoint     Distance="));
-      Serial.print(distanceToWaypoint/1000, 6);
-      Serial.print(F(" km Course-to="));
-      Serial.print(courseToWaypoint, 6);
-      Serial.print(F(" degrees ["));
-      Serial.print(TinyGPSPlus::cardinal(courseToWaypoint));
-      Serial.println(F("]"));
-      Serial.print("");
-    }
+     // Serial.print(F("Waypoint     Distance="));
+      //Serial.print(distanceToWaypoint/1000, 6);
+      //Serial.print(F(" km Course-to="));
+      //Serial.print(courseToWaypoint, 6);
+      //Serial.print(F(" degrees ["));
+      //Serial.print(TinyGPSPlus::cardinal(courseToWaypoint));
+      //Serial.println(F("]"));
+      //Serial.print("");
+   // }
 
     //Serial.print(F("DIAGS      Chars="));
     //Serial.print(gps.charsProcessed());

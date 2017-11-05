@@ -84,8 +84,8 @@ void t3Callback();
 
 // Tasks
 Task t1(1000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to check IMU
-Task t2(500, TASK_FOREVER, &t2Callback, &runner, true);  //adding task to steer vessel and set throttle
-Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true); //adding task to talk to fona
+Task t2(1000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task to steer vessel and set throttle
+Task t3(60000, TASK_FOREVER, &t3Callback, &runner, true); //adding task to talk to fona
 
 void t1Callback() {
   Serial.print("IMU Collection:");
@@ -101,7 +101,7 @@ void t2Callback() {
 }
 
 void t3Callback() {
-  FONA();
+  //FONA('s');
 }
 
 void setup()
@@ -161,7 +161,7 @@ void setup()
   PIDRudder.SetMode(AUTOMATIC);
 
   /* Initialize Fona */
-  Serial.println("Steering PID Set to AUTOMATIC");   
+  Serial.println("Starting FONA...");   
   fonasetup();
   
   /* Initialize Scheduler */
