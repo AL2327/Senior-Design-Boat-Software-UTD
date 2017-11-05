@@ -42,17 +42,18 @@ double Kd = 0;
 
 
 /*GPS VARIABLES*/
-double WaypointLAT[9];
-double WaypointLONG[9];
+double WaypointLAT[9];    //current waypoint latitude
+double WaypointLONG[9];   //current waypoint longitude
 double distanceToWaypoint;  //distance to way point in kilometers
 double courseToWaypoint;  //course to way point in degrees
+int WPCount=0;    //variable for waypoint counter
 //End GPS variables.
 
 /*IMU Variables */
 double Heading = 0; //Current vessel heading in degress.
 
 /*THROTTLE VARIABLES*/
-int THRT = 180; //variable to stor commanded throttle posistion.
+int THRT = 0; //variable to stor commanded throttle posistion.
 
 /*Fona Variables*/
 char replybuffer[255];  // this is a large buffer for replies
@@ -61,20 +62,20 @@ uint8_t type;
 
 /*MCU to MCU Easy transfer variables AKA: Sensor Variables*/
 //variables for temperature and salinity sensors
-float temperature;
-float humidity;
-float dewpoint;
-float steinhart;
-int SalReading;
+float temperature = 29 ;
+float humidity = 54;
+float dewpoint = 20 ;
+float steinhart = 20;
+int SalReading =0;
 
 //variables for voltage
-float Vin;
+float Vin =12.4;
 
 //variable for water level sensor
-int FloatSwitch;
+int FloatSwitch = 0;
 
 //variable to assign a "state of charge designator.
-int BatterySOC;
+int BatterySOC = 2;
 
 /******************************/
 
@@ -145,14 +146,15 @@ void t1Callback() {
 
 void t2Callback() {
   Serial.print("Throttle Setting:");
-  //Serial.println(millis());
-  //Steering(courseToWaypoint);
+  Serial.println(millis());
+  Steering(courseToWaypoint);
   Motor(THRT);
+    sensors();
 }
 
 void t3Callback() {
-  //FONA('s');
-  sensors(); 
+  FONA('s');
+ 
 }
 
 void setup()
@@ -175,7 +177,7 @@ void setup()
   /* Initialise Waypoint Array */
   Serial.println("WAYPOINT Setup");
   delay(500);
-  Waypoint();
+  Waypoint(WPCount);
 
   /* Initialise Rudder */
   Rudder.attach(35);  // attaches the servo on pin 35 to the servo object
@@ -233,12 +235,6 @@ void loop()
   /*End GPS*/
 
 
-  /*STEERING CODE*/
-  PIDRudder.Compute();          // PID computation
-  pos = map(pidoutput, 0, 255, 0, 180);  //map PID output(double) to pos(integer) range
-  pos = constrain(pos, 60, 120);        //contrain the rudder to +/- 30 deg.
-  Rudder.write(pos);              // tell servo to go to position in variable 'pos'
-  /*END STEERING CODE*/
 
   /*GET DATA FROM SENSORS*/
   if (ET.receiveData()) {

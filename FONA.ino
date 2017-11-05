@@ -1,10 +1,10 @@
-void FONA(char command){
-    /*Serial.print(F("FONA> "));
-  while (! Serial.available() ) {
+void FONA(char command) {
+  /*Serial.print(F("FONA> "));
+    while (! Serial.available() ) {
     if (fona.available()) {
-      Serial.write(fona.read());
+    Serial.write(fona.read());
     }
-  }*/
+    }*/
 
   //char command = Serial.read()
   //char command = 's';
@@ -13,7 +13,7 @@ void FONA(char command){
 
   switch (command) {
     case '?': {
-//        printMenu();
+        //        printMenu();
         break;
       }
 
@@ -282,7 +282,7 @@ void FONA(char command){
         }
         break;
       }
-      
+
     case 'h': {
         // hang up!
         if (! fona.hangUp()) {
@@ -395,30 +395,41 @@ void FONA(char command){
 
     case 's': {
         // send an SMS!
-
+        
         String msg1 = String(Heading);
         String msg2 = String(courseToWaypoint, 6);
         String msg3 = String(distanceToWaypoint, 6);
-        String msg4 = String(WaypointLAT[0], 6);
-        String msg5 = String(WaypointLONG[0], 6);
+        String msg4 = String(WaypointLAT[WPCount], 6);
+        String msg5 = String(WaypointLONG[WPCount], 6);
+        String msg6 = String(WPCount, 3);
+        String msg7 = String(temperature,5);
+        String msg8 = String(humidity,2);
+        String msg9 = String(dewpoint,4);
+        String msg10 = String(steinhart, 6);
+        String msg11 = String(SalReading,6);
+        String msg12 = String(Vin);
+        String msg13 = String(BatterySOC);
+        String msg14 = String(FloatSwitch);
         
-        String msg = "Heading: " + msg1 + " " + "Coursetowaypoint: " + msg2 + " " + "DistacetoWaypoint: " + msg3 + " " + "Latitude: " + msg4 + " " + "Longitude: "+ msg5;
-        
-        char sendto[21] = "4698883192", message[141] ;
-        for(int i = 0; i < msg.length() ; i++)
+        String msg = "WP#: " + msg6 + " \n " + "H: " + msg1 + " \n " + "C2WP: " + msg2 + "\n " + "D2WP: " + msg3 + " \n " + "Lat: " + msg4 + "\n " + "Long: " + msg5 + "\n " + "AT: " + msg7 + "\n " + "AH: " 
+        + msg8 + " \n " + "DP: " + msg9 + " \n " + "WT: " + msg10 + " \n " + "SAL: " + msg11 + " \n " + "V: " + msg12 + " \n " + "SoC: " + msg13 + " \n " + "B: " + msg14;
+
+        char sendto[21] = "4698883192", message[300] ;
+        for (int i = 0; i < msg.length() ; i++)
         {
-            msg.toCharArray(message, 141);
-            
-            Serial.println("!!!!!!!MESSAGE IS!!!!!!");
-            Serial.println(message);
+          msg.toCharArray(message, 300);
+
         }
+
+        Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+        Serial.println(message);
         flushSerial();
         /*Serial.print(F("Send to #"));
-        readline(sendto, 20);
-        Serial.println(sendto);
-        Serial.print(F("Type out one-line message (140 char): "));
-        readline(message, 140);
-        Serial.println(message);*/
+          readline(sendto, 20);
+          Serial.println(sendto);
+          Serial.print(F("Type out one-line message (140 char): "));
+          readline(message, 140);
+          Serial.println(message);*/
         if (! fona.sendSMS(sendto, message)) {
           Serial.println(F("Failed"));
         } else {
@@ -429,24 +440,24 @@ void FONA(char command){
       }
 
     case 'u': {
-      // send a USSD!
-      char message[141];
-      flushSerial();
-      Serial.print(F("Type out one-line message (140 char): "));
-      readline(message, 140);
-      Serial.println(message);
+        // send a USSD!
+        char message[141];
+        flushSerial();
+        Serial.print(F("Type out one-line message (140 char): "));
+        readline(message, 140);
+        Serial.println(message);
 
-      uint16_t ussdlen;
-      if (!fona.sendUSSD(message, replybuffer, 250, &ussdlen)) { // pass in buffer and max len!
-        Serial.println(F("Failed"));
-      } else {
-        Serial.println(F("Sent!"));
-        Serial.print(F("***** USSD Reply"));
-        Serial.print(" ("); Serial.print(ussdlen); Serial.println(F(") bytes *****"));
-        Serial.println(replybuffer);
-        Serial.println(F("*****"));
+        uint16_t ussdlen;
+        if (!fona.sendUSSD(message, replybuffer, 250, &ussdlen)) { // pass in buffer and max len!
+          Serial.println(F("Failed"));
+        } else {
+          Serial.println(F("Sent!"));
+          Serial.print(F("***** USSD Reply"));
+          Serial.print(" ("); Serial.print(ussdlen); Serial.println(F(") bytes *****"));
+          Serial.println(replybuffer);
+          Serial.println(F("*****"));
+        }
       }
-    }
 
     /*** Time ***/
 
@@ -507,7 +518,7 @@ void FONA(char command){
         fona.getGPS(0, gpsdata, 120);
         if (type == FONA808_V1)
           Serial.println(F("Reply in format: mode,longitude,latitude,altitude,utctime(yyyymmddHHMMSS),ttff,satellites,speed,course"));
-        else 
+        else
           Serial.println(F("Reply in format: mode,fixstatus,utctime(yyyymmddHHMMSS),latitude,longitude,altitude,speed,course,fixmode,reserved1,HDOP,PDOP,VDOP,reserved2,view_satellites,used_satellites,reserved3,C/N0max,HPA,VPA"));
         Serial.println(gpsdata);
 
@@ -727,4 +738,4 @@ uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout) {
   buff[buffidx] = 0;  // null term
   return buffidx;
 }
- 
+

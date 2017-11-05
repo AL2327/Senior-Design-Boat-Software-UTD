@@ -1,16 +1,43 @@
-void Waypoint() {
+void Waypoint(int WPCount) {
 
   /*Setting some test gps waypoints*/
 
-  /*London*/
-  WaypointLAT[0] = 51.508131;
-  WaypointLONG[0] = -0.128002;
-  /*Dallas*/
-  WaypointLAT[1] = 32.775577 ;
-  WaypointLONG[1] = -96.808646;
-  /*Tokyo*/
-  WaypointLAT[2] = 35.658936;
-  WaypointLONG[2] = 139.745623;
+  if (WaypointLAT[WPCount] == 0 and WaypointLONG[WPCount] == 0 ){
+    WPCount=0;
+  }
 
+  if (distanceToWaypoint >= 0.01){
+    WPCount++;
+  }
+  
+  WaypointLAT[0] = 32.993433;
+  WaypointLONG[0] = -96.751834;
+
+  WaypointLAT[1] = 32.993342 ;
+  WaypointLONG[1] = -96.751828;
+
+  WaypointLAT[2] = 32.994345;
+  WaypointLONG[2] = -96.751598;
+
+  WaypointLAT[3] = 32.993421;
+  WaypointLONG[3] = -96.751600;
+
+  WaypointLAT[4] = 0;
+  WaypointLONG[4] = 0;  
+
+  WaypointLAT[5] = 0;
+  WaypointLONG[5] = 0; 
+  
+  WaypointLAT[6] = 0;
+  WaypointLONG[6] = 0; 
+
+  WaypointLAT[7] = 0;
+  WaypointLONG[7] = 0; 
+
+  WaypointLAT[8] = 0;
+  WaypointLONG[8] = 0; 
+
+  WaypointLAT[9] = 0;
+  WaypointLONG[9] = 0;   
 }
 
