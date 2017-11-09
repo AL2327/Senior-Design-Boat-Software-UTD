@@ -109,6 +109,7 @@ void getGPS()
     Serial.print(gps.satellites.age());
     Serial.print(F("ms Value="));
     Serial.println(gps.satellites.value());
+    //SatFix=gps.satellites.value();
   }
 
    else if (gps.hdop.isUpdated())
@@ -125,13 +126,13 @@ else if (millis() - last > 1000)
     if (gps.location.isValid())
     {
 
-      double distanceToWaypoint =
+      distanceToWaypoint =
         TinyGPSPlus::distanceBetween(
           gps.location.lat(),
           gps.location.lng(),
           WaypointLAT[WPCount], 
           WaypointLONG[WPCount]);
-      double courseToWaypoint =
+      courseToWaypoint =
         TinyGPSPlus::courseTo(
           gps.location.lat(),
           gps.location.lng(),

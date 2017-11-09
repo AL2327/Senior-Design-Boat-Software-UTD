@@ -4,9 +4,6 @@ void getIMU()
 /* IMU SECTION */
 /**************************************************************************/
 
-  sensors_event_t accel_event;
-  sensors_event_t mag_event;
-  sensors_vec_t   orientation;
 
   /* Calculate pitch and roll from the raw accelerometer data */
   accel.getEvent(&accel_event);
@@ -22,7 +19,8 @@ void getIMU()
     Serial.println();
   }
   
-  /* Calculate the heading using the magnetometer */
+
+  /*GET HEADING*/
   mag.getEvent(&mag_event);
   if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
   {
@@ -30,9 +28,27 @@ void getIMU()
     Serial.print(F("Heading: "));
     Serial.print(orientation.heading);
     Serial.print(F("; "));
-    Heading=orientation.heading;
-  }  
-
+    Serial.println();
+    Heading = orientation.heading;
+  }
+  /*End Heading*/
+  
   Serial.println(F(""));
+
+  Serial.print("WAYPOINT ");
+  Serial.print(WPCount);
+  Serial.print(" Set as: LAT: ");  
+  Serial.print(WaypointLAT[WPCount],6);
+  Serial.print(" LONG: ");
+  Serial.print(WaypointLONG[WPCount],6);
+  Serial.println();
+   
+  Serial.print(F("Waypoint Distance="));
+  Serial.print(distanceToWaypoint / 1000, 6);
+  Serial.print(F(" km Course-to="));
+  Serial.print(courseToWaypoint, 6);
+  Serial.print(F(" degrees ["));
+  Serial.println(F(""));
+  
 }
 

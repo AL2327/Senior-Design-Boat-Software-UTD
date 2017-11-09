@@ -28,6 +28,10 @@ Adafruit_9DOF                dof   = Adafruit_9DOF();
 Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(30301);
 Adafruit_LSM303_Mag_Unified   mag   = Adafruit_LSM303_Mag_Unified(30302);
 
+sensors_event_t accel_event;
+sensors_event_t mag_event;
+sensors_vec_t   orientation;
+
 
 /*LET US DEFINE SOME VARIABLES*/
 float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA; /* Update this with the correct SLP for accurate altitude measurements */
@@ -36,7 +40,7 @@ unsigned long last = 0UL; // For stats that happen every 5 seconds
 /*STEERING PID VARIABLES*/
 double pos = 90;    // variable to store the servo position. Set it initially to center (neutral posistion)
 double pidoutput = 0; //variable for PID Rudder control output.
-double Kp = 2;
+double Kp = 50;
 double Ki = 0;
 double Kd = 0;
 
@@ -46,7 +50,9 @@ double WaypointLAT[9];    //current waypoint latitude
 double WaypointLONG[9];   //current waypoint longitude
 double distanceToWaypoint;  //distance to way point in kilometers
 double courseToWaypoint;  //course to way point in degrees
-int WPCount=0;    //variable for waypoint counter
+uint32_t SatFix;
+int WPCount = 0;  //variable for waypoint counter
+
 //End GPS variables.
 
 /*IMU Variables */
@@ -66,10 +72,10 @@ float temperature = 29 ;
 float humidity = 54;
 float dewpoint = 20 ;
 float steinhart = 20;
-int SalReading =0;
+int SalReading = 0;
 
 //variables for voltage
-float Vin =12.4;
+float Vin = 12.4;
 
 //variable for water level sensor
 int FloatSwitch = 0;
@@ -131,30 +137,26 @@ Scheduler runner;
 // Callback methods prototypes
 void t1Callback();
 void t2Callback();
-void t3Callback();
 
 // Tasks
-Task t1(500, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to check IMU
-Task t2(1000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task set throttle
-Task t3(60000, TASK_FOREVER, &t3Callback, &runner, true); //adding task to talk to fona
+Task t1(1000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
+Task t2(60000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task do fona
+
 
 void t1Callback() {
   Serial.print("IMU Collection:");
   Serial.println(millis());
   getIMU();
+  Steering(courseToWaypoint);
+//  Serial.print("Throttle Setting:");
+//  Serial.println(millis());
+//  Motor(THRT);
+//  sensors();
 }
 
 void t2Callback() {
-  Serial.print("Throttle Setting:");
-  Serial.println(millis());
-  Steering(courseToWaypoint);
-  Motor(THRT);
-    sensors();
-}
+  //FONA('s');
 
-void t3Callback() {
-  FONA('s');
- 
 }
 
 void setup()
@@ -162,6 +164,8 @@ void setup()
 
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
+  Serial3.begin(9600);              //Serial communication from arduino reading sensors
+
 
   //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
   ET.begin(details(sensorData), &Serial3);
@@ -178,7 +182,14 @@ void setup()
   Serial.println("WAYPOINT Setup");
   delay(500);
   Waypoint(WPCount);
-
+  Serial.print("WAYPOINT ");
+  Serial.print(WPCount);
+  Serial.print(" Set as: LAT: ");  
+  Serial.print(WaypointLAT[WPCount],6);
+  Serial.print(" LONG: ");
+  Serial.print(WaypointLONG[WPCount],6);
+  Serial.println();
+  
   /* Initialise Rudder */
   Rudder.attach(35);  // attaches the servo on pin 35 to the servo object
 
@@ -190,12 +201,12 @@ void setup()
   Serial.println("Rudder Sweep in 3 seconds. KEEP CLEAR!");
   delay(3000);
 
-  for (pos = 45; pos <= 135; pos += 1) { // goes from 0 degrees to 180 degrees
+  for (pos = 30; pos <= 150; pos += 1) { // goes from 30 degrees to 150 degrees
     // in steps of 1 degree
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
   }
-  for (pos = 135; pos >= 45; pos -= 1) { // goes from 180 degrees to 0 degrees
+  for (pos = 150; pos >= 30; pos -= 1) { // goes from 150 degrees to 30 degrees
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
   }
@@ -220,6 +231,15 @@ void setup()
   Serial.println("Starting FONA...");
   fonasetup();
 
+  /*GPS initialize */
+  Serial.println("Starting GPS... ");
+  /*
+  do {
+  Serial.println("Current Number of Satelites in View: ");  
+  Serial.println(SatFix);   
+  delay(500);
+  } while (SatFix <4);
+  */
   /* Initialize Scheduler */
   Serial.println("Task Handler Start Time Set: ");
   runner.startNow();  //set point-in-time for scheduling start.
@@ -251,7 +271,7 @@ void loop()
   }
 
 
-  /*STEERING CODE*/
+
 
   runner.execute();
 }
