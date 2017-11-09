@@ -213,7 +213,6 @@ void setup()
   Rudder.write(pos);  //send rudder to mid position
   delay(1000);
 
-
   /* Initialize Throttle*/
   Serial.println("Throttle Setup");
   delay(500);
@@ -231,13 +230,7 @@ void setup()
   fonasetup();
 
   /*GPS initialize */
-  Serial.println("Starting GPS... ");
-
-    do {
-    Serial.println("Current Number of Satelites in View: ");
-    Serial.println(SatFix);
-    delay(500);
-    } while (SatFix <4);
+  GPSStart();
 
   /* Initialize Scheduler */
   Serial.println("Task Handler Start Time Set: ");
