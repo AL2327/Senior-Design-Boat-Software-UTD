@@ -398,7 +398,7 @@ void FONA(char command) {
         
         String msg1 = String(Heading);
         String msg2 = String(courseToWaypoint, 6);
-        String msg3 = String(distanceToWaypoint, 6);
+        String msg3 = String(distanceToWaypoint / 1000, 6);
         String msg4 = String(WaypointLAT[WPCount], 6);
         String msg5 = String(WaypointLONG[WPCount], 6);
         String msg6 = String(WPCount, 3);

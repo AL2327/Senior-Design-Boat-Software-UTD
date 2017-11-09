@@ -109,7 +109,7 @@ void getGPS()
     Serial.print(gps.satellites.age());
     Serial.print(F("ms Value="));
     Serial.println(gps.satellites.value());
-    //SatFix=gps.satellites.value();
+    SatFix=int(gps.satellites.value());
   }
 
    else if (gps.hdop.isUpdated())

@@ -12,7 +12,6 @@
 #include <EasyTransfer.h>
 
 
-
 #define _TASK_SLEEP_ON_IDLE_RUN  //tells scheduler to put processor to sleep if doing nothing.
 #define _TASK_TIMECRITICAL //allows designation of a time critical task(s) I haven't used this yet or know how -Aaron. 
 
@@ -50,7 +49,7 @@ double WaypointLAT[9];    //current waypoint latitude
 double WaypointLONG[9];   //current waypoint longitude
 double distanceToWaypoint;  //distance to way point in kilometers
 double courseToWaypoint;  //course to way point in degrees
-uint32_t SatFix;
+int SatFix;
 int WPCount = 0;  //variable for waypoint counter
 
 //End GPS variables.
@@ -148,10 +147,10 @@ void t1Callback() {
   Serial.println(millis());
   getIMU();
   Steering(courseToWaypoint);
-//  Serial.print("Throttle Setting:");
-//  Serial.println(millis());
-//  Motor(THRT);
-//  sensors();
+  //  Serial.print("Throttle Setting:");
+  //  Serial.println(millis());
+  //  Motor(THRT);
+  //  sensors();
 }
 
 void t2Callback() {
@@ -184,12 +183,12 @@ void setup()
   Waypoint(WPCount);
   Serial.print("WAYPOINT ");
   Serial.print(WPCount);
-  Serial.print(" Set as: LAT: ");  
-  Serial.print(WaypointLAT[WPCount],6);
+  Serial.print(" Set as: LAT: ");
+  Serial.print(WaypointLAT[WPCount], 8);
   Serial.print(" LONG: ");
-  Serial.print(WaypointLONG[WPCount],6);
+  Serial.print(WaypointLONG[WPCount], 8);
   Serial.println();
-  
+
   /* Initialise Rudder */
   Rudder.attach(35);  // attaches the servo on pin 35 to the servo object
 
@@ -233,13 +232,13 @@ void setup()
 
   /*GPS initialize */
   Serial.println("Starting GPS... ");
-  /*
-  do {
-  Serial.println("Current Number of Satelites in View: ");  
-  Serial.println(SatFix);   
-  delay(500);
-  } while (SatFix <4);
-  */
+
+    do {
+    Serial.println("Current Number of Satelites in View: ");
+    Serial.println(SatFix);
+    delay(500);
+    } while (SatFix <4);
+
   /* Initialize Scheduler */
   Serial.println("Task Handler Start Time Set: ");
   runner.startNow();  //set point-in-time for scheduling start.
@@ -274,4 +273,19 @@ void loop()
 
 
   runner.execute();
+    WaypointTEST();
 }
+
+void WaypointTEST(){
+  
+  if (WaypointLAT[WPCount] == 0 and WaypointLONG[WPCount] == 0 ) {
+    WPCount = 0;
+  }
+
+  if (distanceToWaypoint <= 0.01) {
+    WPCount++;
+    Serial.println("WAYPOINT COUNTER: ");
+    Serial.print(WPCount);
+  }
+}
+

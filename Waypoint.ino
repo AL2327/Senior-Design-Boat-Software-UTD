@@ -1,15 +1,9 @@
 void Waypoint(int WPCount) {
 
   /*Setting some test gps waypoints*/
-
-  if (WaypointLAT[WPCount] == 0 and WaypointLONG[WPCount] == 0 ){
-    WPCount=0;
-  }
-
-  if (distanceToWaypoint >= 0.01){
-    WPCount++;
-  }
-  
+  Serial.println("WAYPOINT COUNTER: ");
+  Serial.print(WPCount);
+    
   WaypointLAT[0] = 32.993433;
   WaypointLONG[0] = -96.751834;
 

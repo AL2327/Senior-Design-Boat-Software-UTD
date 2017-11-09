@@ -47,7 +47,11 @@ void getIMU()
   Serial.print(distanceToWaypoint / 1000, 6);
   Serial.print(F(" km Course-to="));
   Serial.print(courseToWaypoint, 6);
-  Serial.print(F(" degrees ["));
+  Serial.print(F(" degrees. "));
+  Serial.println(F(""));
+  Serial.print(F("Waypoint Distance="));
+  Serial.print(distanceToWaypoint, 6);
+  Serial.print(F(" m."));
   Serial.println(F(""));
   
 }
