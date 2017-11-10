@@ -136,10 +136,12 @@ Scheduler runner;
 // Callback methods prototypes
 void t1Callback();
 void t2Callback();
+void t3Callback();
 
 // Tasks
 Task t1(1000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
 Task t2(60000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task do fona
+Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 
 
 void t1Callback() {
@@ -147,6 +149,7 @@ void t1Callback() {
   Serial.println(millis());
   getIMU();
   Steering(courseToWaypoint);
+  
   //  Serial.print("Throttle Setting:");
   //  Serial.println(millis());
   //  Motor(THRT);
@@ -156,6 +159,10 @@ void t1Callback() {
 void t2Callback() {
   //FONA('s');
 
+}
+
+void t3Callback() {
+  WaypointTEST();
 }
 
 void setup()
@@ -169,17 +176,18 @@ void setup()
   //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
   ET.begin(details(sensorData), &Serial3);
 
+  delay(100);
   Serial.println("Program Begin...");
-  delay(500);
+  delay(100);
 
   /* Initialise the imu sensors */
-  Serial.println("IMU Initialise...");
-  delay(500);
+  Serial.println("IMU Initialize...");
+  delay(100);
   initSensors();
 
   /* Initialise Waypoint Array */
   Serial.println("WAYPOINT Setup");
-  delay(500);
+  delay(100);
   Waypoint(WPCount);
   Serial.print("WAYPOINT ");
   Serial.print(WPCount);
@@ -194,35 +202,35 @@ void setup()
 
   Rudder.write(pos);  //send rudder to mid position
 
-  Serial.println("Rudder Amidships.  3 Second Hold.");
-  delay(3000);      // wait for 3 seconds after rudder moves.
+  //Serial.println("Rudder Amidships.  3 Second Hold.");
+  //delay(3000);      // wait for 3 seconds after rudder moves.
 
-  Serial.println("Rudder Sweep in 3 seconds. KEEP CLEAR!");
-  delay(3000);
+  Serial.println("Rudder Sweep. KEEP CLEAR!");
+  //delay(3000);
 
   for (pos = 30; pos <= 150; pos += 1) { // goes from 30 degrees to 150 degrees
     // in steps of 1 degree
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(10);                       // waits 15ms for the servo to reach the position
   }
   for (pos = 150; pos >= 30; pos -= 1) { // goes from 150 degrees to 30 degrees
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(10);                       // waits 15ms for the servo to reach the position
   }
   pos = 90;
   Rudder.write(pos);  //send rudder to mid position
-  delay(1000);
+  //delay(1000);
 
   /* Initialize Throttle*/
   Serial.println("Throttle Setup");
-  delay(500);
+  //delay(500);
   Throttle.attach(36); //attatch throttle to pin 36 to the servo object.
   Throttle.write(THRT); //send command to set throttle to 0.
   Serial.println("Throttle Set to ZERO");
 
   /* Initialize Steering PID*/
   Serial.println("Steering PID Set to AUTOMATIC");
-  delay(500);
+  delay(100);
   PIDRudder.SetMode(AUTOMATIC);
 
   /* Initialize Fona */
@@ -262,23 +270,9 @@ void loop()
     BatterySOC = BatterySOC;
   }
 
-
-
-
   runner.execute();
-    WaypointTEST();
+
 }
 
-void WaypointTEST(){
-  
-  if (WaypointLAT[WPCount] == 0 and WaypointLONG[WPCount] == 0 ) {
-    WPCount = 0;
-  }
 
-  if (distanceToWaypoint <= 0.01) {
-    WPCount++;
-    Serial.println("WAYPOINT COUNTER: ");
-    Serial.print(WPCount);
-  }
-}
 

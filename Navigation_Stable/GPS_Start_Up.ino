@@ -1,7 +1,7 @@
 void GPSStart() {
 
 
-  Serial.println("Starting GPS... ");
+  Serial.println("Starting GPS. This may take several minutes. ");
 
 
   do {
@@ -20,7 +20,7 @@ void GPSStart() {
 
     Serial.println("Current Number of Satelites in View: ");
     Serial.println(SatFix);
-    delay(500);
+    delay(100);
   } while (SatFix < 4);
 
 }

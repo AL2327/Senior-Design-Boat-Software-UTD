@@ -140,7 +140,7 @@ else if (millis() - last > 1000)
           WaypointLONG[WPCount]);
 
       Serial.print(F("Waypoint Distance="));
-      Serial.print(distanceToWaypoint/1000, 6);
+      Serial.print(distanceToWaypoint / 1000, 6);
       Serial.print(F(" km Course-to="));
       Serial.print(courseToWaypoint, 6);
       Serial.print(F(" degrees ["));
