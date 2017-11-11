@@ -39,8 +39,8 @@ unsigned long last = 0UL; // For stats that happen every 5 seconds
 /*STEERING PID VARIABLES*/
 double pos = 90;    // variable to store the servo position. Set it initially to center (neutral posistion)
 double pidoutput = 0; //variable for PID Rudder control output.
-double Kp = 50;
-double Ki = 0;
+double Kp = 100;
+double Ki = 10;
 double Kd = 0;
 
 
@@ -58,7 +58,11 @@ int WPCount = 0;  //variable for waypoint counter
 double Heading = 0; //Current vessel heading in degress.
 
 /*THROTTLE VARIABLES*/
-int THRT = 0; //variable to stor commanded throttle posistion.
+/*0 = full reverse, 90=STOP, 180=full forward*/
+
+int THRT = 90; //variable to stop commanded throttle posistion.
+
+
 
 /*Fona Variables*/
 char replybuffer[255];  // this is a large buffer for replies
@@ -149,10 +153,7 @@ void t1Callback() {
   Serial.println(millis());
   getIMU();
   Steering(courseToWaypoint);
-  
-  //  Serial.print("Throttle Setting:");
-  //  Serial.println(millis());
-  //  Motor(THRT);
+  Motor(THRT);
   //  sensors();
 }
 
@@ -219,14 +220,27 @@ void setup()
   }
   pos = 90;
   Rudder.write(pos);  //send rudder to mid position
-  //delay(1000);
 
   /* Initialize Throttle*/
-  Serial.println("Throttle Setup");
-  //delay(500);
+  Serial.println("Throttle Setup. KEEP CLEAR!");
+
   Throttle.attach(36); //attatch throttle to pin 36 to the servo object.
-  Throttle.write(THRT); //send command to set throttle to 0.
-  Serial.println("Throttle Set to ZERO");
+
+  /*set throttle from neutral to full foward.*/
+  for (THRT = 90; THRT <= 180; THRT += 1) {
+    // in steps of 1 degree
+    Throttle.write(THRT);
+    delay(10);
+  }
+  /*set throttle from neutral to full reverse.*/
+  for (pos = 90; THRT >= 0; THRT -= 1) {
+    Throttle.write(THRT);
+    delay(10);
+  }
+
+  THRT = 90;
+  Throttle.write(THRT); //send command to set throttle to 0 or int value 90.
+  Serial.println("Throttle Set to ZER0 (NEUTRAL)");
 
   /* Initialize Steering PID*/
   Serial.println("Steering PID Set to AUTOMATIC");
@@ -269,6 +283,8 @@ void loop()
     FloatSwitch = sensorData.FloatSwitch;
     BatterySOC = BatterySOC;
   }
+  delay(50);
+
 
   runner.execute();
 
