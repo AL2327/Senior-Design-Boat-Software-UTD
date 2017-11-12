@@ -91,7 +91,7 @@ float Vin;
 uint16_t FloatSwitch;
 
 //variable to assign a "state of charge designator.
-uint16_t BatterySOC;                   
+uint16_t BatterySOC;
 
 /******************************/
 
@@ -277,6 +277,13 @@ void setup()
 
   /*GPS initialize */
   GPSStart();
+
+  /*Let's get moving!*/
+  THRT = 180;
+  Throttle.write(THRT); //send command to set throttle
+  Serial.println("Throttle Set to FULL!");
+
+  beep(3);  //3 beeps to register warning
 
   /* Initialize Scheduler */
   Serial.println("Task Handler Start Time Set: ");
