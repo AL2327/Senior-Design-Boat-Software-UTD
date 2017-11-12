@@ -161,8 +161,6 @@ Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 void t1Callback() {
   Serial.print("IMU Collection:");
   Serial.println(millis());
-  getIMU();
-  Steering(courseToWaypoint);
   Motor(THRT);
 
 }
@@ -315,7 +313,9 @@ void loop()
     BatterySOC = BatterySOC;
   }
   delay(100);
-
+  
+  getIMU();
+  Steering(courseToWaypoint);
 
   runner.execute();
 
