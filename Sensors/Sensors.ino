@@ -34,13 +34,13 @@ float steinhart;
 float temperature;
 float humidity;
 float dewpoint;
-int SalReading;
+uint16_t SalReading;
 
 //variable for water level sensor
-int FloatSwitch;
+uint16_t FloatSwitch;
 
 //variable to assign a "state of charge designator.
-int BatterySOC;
+uint16_t BatterySOC;
 
 //Variables for voltage input calculation
 float Vout = 0.0;
@@ -67,16 +67,16 @@ struct SEND_DATA_STRUCTURE {
   float humidity;
   float dewpoint;
   float steinhart;
-  int SalReading;
+  uint16_t SalReading;
 
   //variables for voltage
-  float Vin;
+  uint16_t Vin;
 
   //variable for water level sensor
-  int FloatSwitch;
+  uint16_t FloatSwitch;
 
   //variable to assign a "state of charge designator.
-  int BatterySOC;
+  uint16_t BatterySOC;
 };
 
 //give a name to the group of data
@@ -190,7 +190,7 @@ else if (Vin <= 1165) {
   Serial.print(BatterySOC);
   Serial.println("");
 
-ET.sendData();   //Send all our data over the serial port to teensy
+  ET.sendData();   //Send all our data over the serial port to teensy
 
-
+  delay(2500);
 }
