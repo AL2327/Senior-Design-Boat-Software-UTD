@@ -1,25 +1,33 @@
-#include <TinyGPS++.h>
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_LSM303_U.h>
-#include <Adafruit_L3GD20_U.h>
-#include <Adafruit_9DOF.h>
-#include <TaskScheduler.h>
-#include <Servo.h>
-#include <PID_v1.h>
-#include <SoftwareSerial.h>
-#include <Adafruit_FONA.h>
-#include <EasyTransfer.h>
+#include <TinyGPS++.h>  //library for GPS
+#include <Wire.h>       //libary for i2c bus
+#include <Adafruit_Sensor.h>  //library for imu
+#include <Adafruit_LSM303_U.h> //library for imu
+#include <Adafruit_L3GD20_U.h>  //library for imu
+#include <Adafruit_9DOF.h>  //library for imu
+#include <TaskScheduler.h>  //library for task timing/manager
+#include <Servo.h>      //library for servo control
+#include <PID_v1.h>     //library for PID calculations
+//#include <SoftwareSerial.h>
+#include <Adafruit_FONA.h>    //library for cellular radio
+#include <EasyTransfer.h>     //library for microcontroller to microcontroller communication over serial.
+#include <GOFi2cOLED.h> //library for OLED display
 
 
 #define _TASK_SLEEP_ON_IDLE_RUN  //tells scheduler to put processor to sleep if doing nothing.
 #define _TASK_TIMECRITICAL //allows designation of a time critical task(s) I haven't used this yet or know how -Aaron. 
+
+//Buzzer pin definition 
+#define buzzer 34
+
+
 
 //Fona definitions
 #define FONA_RX 10
 #define FONA_TX 9
 #define FONA_RST 20
 #define HWSERIAL Serial2
+
+
 
 
 /* Assign a unique ID to the IMU sensors */
@@ -105,6 +113,9 @@ Servo Throttle;
 // Define PID controller for rudder
 PID PIDRudder(&Heading, &pidoutput, &courseToWaypoint, Kp, Ki, Kd, DIRECT );
 
+//OLED Object for Display Screen
+GOFi2cOLED OLED;
+
 
 //**********EASY TRANFER SET UP**********
 //create object for mcu to mcu serial communication
@@ -169,15 +180,26 @@ void t3Callback() {
 void setup()
 {
 
+  pinMode(buzzer, OUTPUT);
+  
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
   Serial3.begin(9600);              //Serial communication from arduino reading sensors
 
-
-  //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
+    //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
   ET.begin(details(sensorData), &Serial3);
 
-  delay(100);
+  beep(1);
+
+    /*OLED SETUP*/
+  OLED.init(0x3C); //Set the I2C addr for the OLED display
+  OLED.display();  //show splashscreen
+  delay(1000);        //wait one second
+  OLED.clearDisplay(); //Clear Display
+  OLED.setTextSize(1);  //Set text size to smallest
+  OLED.setTextColor(WHITE);  //Set text to black background, color text. 
+  /*END OLED SETUP*/
+  
   Serial.println("Program Begin...");
   delay(100);
 
