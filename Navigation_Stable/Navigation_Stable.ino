@@ -67,10 +67,9 @@ double Heading = 0; //Current vessel heading in degress.
 
 /*THROTTLE VARIABLES*/
 /*0 = full reverse, 90=STOP, 180=full forward*/
-
 int THRT = 90; //variable to stop commanded throttle posistion.
 
-
+int beeping; //variable to store number of beeps we want
 
 /*Fona Variables*/
 char replybuffer[255];  // this is a large buffer for replies
@@ -165,7 +164,7 @@ void t1Callback() {
   getIMU();
   Steering(courseToWaypoint);
   Motor(THRT);
-  //  sensors();
+
 }
 
 void t2Callback() {
@@ -175,6 +174,7 @@ void t2Callback() {
 
 void t3Callback() {
   WaypointTEST();
+  sensors();
 }
 
 void setup()
@@ -189,12 +189,12 @@ void setup()
     //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
   ET.begin(details(sensorData), &Serial3);
 
-  beep(1);
+  beep(1);  //a beep to announce I am on.
 
     /*OLED SETUP*/
   OLED.init(0x3C); //Set the I2C addr for the OLED display
-  OLED.display();  //show splashscreen
-  delay(1000);        //wait one second
+  //OLED.display();  //show splashscreen
+  //delay(1000);        //wait one second
   OLED.clearDisplay(); //Clear Display
   OLED.setTextSize(1);  //Set text size to smallest
   OLED.setTextColor(WHITE);  //Set text to black background, color text. 
@@ -229,6 +229,7 @@ void setup()
   //delay(3000);      // wait for 3 seconds after rudder moves.
 
   Serial.println("Rudder Sweep. KEEP CLEAR!");
+  beep(3);  //3 beeps to register warning
   //delay(3000);
 
   for (pos = 30; pos <= 150; pos += 1) { // goes from 30 degrees to 150 degrees
@@ -245,6 +246,7 @@ void setup()
 
   /* Initialize Throttle*/
   Serial.println("Throttle Setup. KEEP CLEAR!");
+  beep(3);  //3 beeps to register warning
 
   Throttle.attach(36); //attatch throttle to pin 36 to the servo object.
 
