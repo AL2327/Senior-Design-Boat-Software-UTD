@@ -1,8 +1,10 @@
 /********************************************************************/
 // First we include the libraries
 #include <Sensirion.h>       //library for our air temp/humidity sensor
-#include <EasyTransfer.h>    //allows serial communication between microcontrollers
+#include <SoftEasyTransfer.h>    //allows serial communication between microcontrollers
 /********************************************************************/
+
+SoftwareSerial mySerial(10, 11);
 
 //Definitions for bilge pump
 #define Water_Level_Sensor 5
@@ -54,7 +56,7 @@ Sensirion tempSensor = Sensirion(dataPin, clockPin);
 
 /********************************************************************/
 //create serial communication object
-EasyTransfer ET;
+SoftEasyTransfer ET;
 
 struct SEND_DATA_STRUCTURE {
   //put your variable definitions here for the data you want to send
@@ -84,11 +86,11 @@ SEND_DATA_STRUCTURE sensorData;
 
 void setup(void)
 {
-
-  //Serial.begin(9600);
+  mySerial.begin(9600);
+  Serial.begin(9600);
 
   //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
-  ET.begin(details(sensorData), &Serial);
+  ET.begin(details(sensorData), &mySerial);
 
 
   //initialize pins
@@ -105,14 +107,14 @@ void loop(void)
 
   //Read and calculate analog NTC thermisitor
   ADCvalue = analogRead(NTCPin);
-  //Serial.print("Analog value ");
-  //Serial.print(ADCvalue);
-  //Serial.print(" = ");
+  Serial.print("Analog value ");
+  Serial.print(ADCvalue);
+  Serial.print(" = ");
   //convert this ADC value into resistance
   Resistance = (1023 / ADCvalue) - 1;
   Resistance = SERIESRESISTOR / Resistance;
-  //Serial.print(Resistance);
-  //Serial.println(" Ohm");
+  Serial.print(Resistance);
+  Serial.println(" Ohm");
   //calculate temperature using steinhart formula
   steinhart = Resistance / NOMINAL_RESISTANCE; // (R/Ro)
   steinhart = log(steinhart); // ln(R/Ro)
@@ -121,40 +123,40 @@ void loop(void)
   steinhart = 1.0 / steinhart; // Invert
   steinhart -= 273.15; // convert to C
 
-  //Serial.print("Water Temperature ");
-  //Serial.print(steinhart);
-  //Serial.println(" oC");
+  Serial.print("Water Temperature ");
+  Serial.print(steinhart);
+  Serial.println(" oC");
   //end thermristor calculations and output
 
   //Read Sensirion sensor
   tempSensor.measure(&temperature, &humidity, &dewpoint);
-  //Serial.println(" ");
-  //Serial.print("Air Temperature: ");
-  //Serial.print(temperature);
-  //Serial.print(" C, Atm. Humidity: ");
-  //Serial.print(humidity);
-  //Serial.print(" %, Dewpoint: ");
-  //Serial.print(dewpoint);
-  //Serial.print(" C");
+  Serial.println(" ");
+  Serial.print("Air Temperature: ");
+  Serial.print(temperature);
+  Serial.print(" C, Atm. Humidity: ");
+  Serial.print(humidity);
+  Serial.print(" %, Dewpoint: ");
+  Serial.print(dewpoint);
+  Serial.print(" C");
 
   //Read salinity sensor
   float sal = analogRead(salinity);
   SalReading = sal * (5.0 / 1023.0);
-  //Serial.println(" ");
-  //Serial.println("Salinity: ");
-  //Serial.print(SalReading);
-  //Serial.println(" ppt");
+  Serial.println(" ");
+  Serial.println("Salinity: ");
+  Serial.print(SalReading);
+  Serial.println(" ppt");
 
   //read float switch state
   FloatSwitch = digitalRead(Water_Level_Sensor);
 
   //set pump to on/off according to float switch state
   if (FloatSwitch == HIGH) {
-  //Serial.println( "WATER LEVEL - LOW");
+  Serial.println( "WATER LEVEL - LOW");
     digitalWrite(Pump, LOW);
   }
   else {
-  //  Serial.println( "WATER LEVEL - HIGH");
+    Serial.println( "WATER LEVEL - HIGH");
     digitalWrite(Pump, HIGH);
   }
 
@@ -164,9 +166,9 @@ void loop(void)
   //Do some ENA Math and output voltage.
   Vout = (Vread * 5.0) / 1024;
   Vin = Vout / (R2 / (R1 + R2));
-  //Serial.println("Input Voltage = ");
-  //Serial.print(Vin);
-  //Serial.println("");
+  Serial.println("Input Voltage = ");
+  Serial.print(Vin);
+  Serial.println("");
 
   //assign a battery state of charge number depending on the Vin.  We can use this number to limit certain functions based on the battery's current remaining capacity.
 
@@ -184,9 +186,9 @@ else if (Vin <= 1165) {
   BatterySOC = 4; // our battery is under 20% charged. This is critically low.
 }
 
-  //Serial.println("Battery State of Charge: 1: >80%, 2: 40-80%, 3: 20-40%, 4: <20%");
-  //Serial.print(BatterySOC);
-  //Serial.println("");
+  Serial.println("Battery State of Charge: 1: >80%, 2: 40-80%, 3: 20-40%, 4: <20%");
+  Serial.print(BatterySOC);
+  Serial.println("");
 
 ET.sendData();   //Send all our data over the serial port to teensy
 
