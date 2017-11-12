@@ -16,7 +16,7 @@
 #define _TASK_SLEEP_ON_IDLE_RUN  //tells scheduler to put processor to sleep if doing nothing.
 #define _TASK_TIMECRITICAL //allows designation of a time critical task(s) I haven't used this yet or know how -Aaron. 
 
-//Buzzer pin definition 
+//Buzzer pin definition
 #define buzzer 34
 
 
@@ -78,20 +78,20 @@ uint8_t type;
 
 /*MCU to MCU Easy transfer variables AKA: Sensor Variables*/
 //variables for temperature and salinity sensors
-float temperature = 29 ;
-float humidity = 54;
-float dewpoint = 20 ;
-float steinhart = 20;
-int SalReading = 0;
+float temperature ;
+float humidity;
+float dewpoint;
+float steinhart;
+uint16_t SalReading;
 
 //variables for voltage
-float Vin = 12.4;
+float Vin;
 
 //variable for water level sensor
-int FloatSwitch = 0;
+uint16_t FloatSwitch;
 
 //variable to assign a "state of charge designator.
-int BatterySOC = 2;
+uint16_t BatterySOC;                   
 
 /******************************/
 
@@ -129,16 +129,16 @@ struct RECEIVE_DATA_STRUCTURE {
   float humidity;
   float dewpoint;
   float steinhart;
-  int SalReading;
+  uint16_t SalReading;
 
   //variables for voltage
   float Vin;
 
   //variable for water level sensor
-  int FloatSwitch;
+  uint16_t FloatSwitch;
 
   //variable to assign a "state of charge designator.
-  int BatterySOC;
+  uint16_t BatterySOC;
 };
 
 //give a name to the group of data
@@ -181,25 +181,25 @@ void setup()
 {
 
   pinMode(buzzer, OUTPUT);
-  
+
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
   Serial3.begin(9600);              //Serial communication from arduino reading sensors
 
-    //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
+  //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
   ET.begin(details(sensorData), &Serial3);
 
   beep(1);  //a beep to announce I am on.
 
-    /*OLED SETUP*/
+  /*OLED SETUP*/
   OLED.init(0x3C); //Set the I2C addr for the OLED display
   //OLED.display();  //show splashscreen
   //delay(1000);        //wait one second
   OLED.clearDisplay(); //Clear Display
   OLED.setTextSize(1);  //Set text size to smallest
-  OLED.setTextColor(WHITE);  //Set text to black background, color text. 
+  OLED.setTextColor(WHITE);  //Set text to black background, color text.
   /*END OLED SETUP*/
-  
+
   Serial.println("Program Begin...");
   delay(100);
 
@@ -307,7 +307,7 @@ void loop()
     FloatSwitch = sensorData.FloatSwitch;
     BatterySOC = BatterySOC;
   }
-  delay(50);
+  delay(100);
 
 
   runner.execute();
