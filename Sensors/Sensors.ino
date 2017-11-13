@@ -57,7 +57,7 @@ float Vin = 0.0;
 
 
 /********************************************************************/
-Sensirion tempSensor = Sensirion(dataPin, clockPin);
+//Sensirion tempSensor = Sensirion(dataPin, clockPin);
 
 /********************************************************************/
 
@@ -116,7 +116,7 @@ void loop(void)
   
   //end thermristor calculations and output
 
-
+/*
   //Read Sensirion sensor
   tempSensor.measure(&temperature, &humidity, &dewpoint);
   Serial.println(" ");
@@ -128,6 +128,7 @@ void loop(void)
   Serial.print(dewpoint);
   Serial.print(" C");
 
+*/
 
   //Read salinity sensor
   float sal = analogRead(salinity);

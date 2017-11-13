@@ -1,9 +1,13 @@
 void sensors() {
 
-  //water temmperature input
-  float WTemp;
-  WTemp = analogRead(WaterTemp);
-  steinhart = mapfloat(WTemp, 0, 177, -55, 125);
+
+
+
+  //WTemp=mapfloat(WTemp, 0,1023, 0,177);
+  Serial.print("Water Temperature Input ");
+  Serial.print(WTemp, 4);
+
+  steinhart = mapfloat(WTemp, 0, 1023, -55, 125);
 
   Serial.print("Water Temperature ");
   Serial.print(steinhart);
@@ -26,6 +30,11 @@ void sensors() {
   //salinity parts per thousand
   float SalInput;
   SalInput = analogRead(Salinity);
+  SalInput = mapfloat(SalInput, 0, 1023, 0, 177);
+  Serial.println("Salinity  PWM Input ");
+  Serial.print(SalInput);
+
+
   SalReading = mapfloat(SalInput, 0, 177, 0, 177);
 
   Serial.println(" ");

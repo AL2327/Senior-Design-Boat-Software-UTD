@@ -27,7 +27,7 @@ const uint8_t clockPin =  3;
 #define VoltageSense 14
 
 // Definition for water temperatur input
-#define WaterTemp 15
+#define WaterTemp 21
 
 // Definition for Salinity Input
 #define Salinity 16
@@ -109,6 +109,14 @@ int FloatSwitch;
 //variable to assign a "state of charge designator.
 int BatterySOC;
 
+
+//water temmperature input averaging variables
+const int numReadings = 1000;
+int WTempSample[numReadings];
+int readIndex = 0;
+int total = 0;
+int WTemp;
+
 /******************************/
 
 Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fona
@@ -138,11 +146,11 @@ Sensirion tempSensor = Sensirion(dataPin, clockPin);
 
 /*
 
-//**********EASY TRANFER SET UP**********
-//create object for mcu to mcu serial communication
-EasyTransfer ET;
+  //**********EASY TRANFER SET UP**********
+  //create object for mcu to mcu serial communication
+  EasyTransfer ET;
 
-struct RECEIVE_DATA_STRUCTURE {
+  struct RECEIVE_DATA_STRUCTURE {
   //put your variable definitions here for the data you want to send
   //THIS MUST BE EXACTLY THE SAME ON THE OTHER MICROCONTROLLER
 
@@ -161,10 +169,10 @@ struct RECEIVE_DATA_STRUCTURE {
 
   //variable to assign a "state of charge designator.
   uint16_t BatterySOC;
-};
+  };
 
-//give a name to the group of data
-RECEIVE_DATA_STRUCTURE sensorData;
+  //give a name to the group of data
+  RECEIVE_DATA_STRUCTURE sensorData;
 */
 
 //***************************************
@@ -184,6 +192,8 @@ Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 void t1Callback() {
   Serial.print("IMU Collection:");
   Serial.println(millis());
+  getIMU();
+  Steering(courseToWaypoint);
   Motor(THRT);
 
 }
@@ -324,26 +334,25 @@ void loop()
   /*End GPS*/
 
 
-/*
-  /*GET DATA FROM SENSORS
-  if (ET.receiveData()) {
-    //this is how you access the variables. [name of the group].[variable name]
-    //variables for temperature and salinity sensors
-    temperature = sensorData.temperature;
-    humidity = sensorData.humidity;
-    dewpoint = sensorData.dewpoint;
-    steinhart = sensorData.steinhart;
-    SalReading = sensorData.SalReading;
-    Vin = sensorData.Vin;
-    FloatSwitch = sensorData.FloatSwitch;
-    BatterySOC = BatterySOC;
-  }
-  delay(100);
+  /*
+    /*GET DATA FROM SENSORS
+    if (ET.receiveData()) {
+      //this is how you access the variables. [name of the group].[variable name]
+      //variables for temperature and salinity sensors
+      temperature = sensorData.temperature;
+      humidity = sensorData.humidity;
+      dewpoint = sensorData.dewpoint;
+      steinhart = sensorData.steinhart;
+      SalReading = sensorData.SalReading;
+      Vin = sensorData.Vin;
+      FloatSwitch = sensorData.FloatSwitch;
+      BatterySOC = BatterySOC;
+    }
+    delay(100);
 
   */
-  getIMU();
-  Steering(courseToWaypoint);
 
+WaterTempSample();
   runner.execute();
 
 }
@@ -351,5 +360,5 @@ void loop()
 
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
 {
- return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
