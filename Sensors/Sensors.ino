@@ -1,14 +1,14 @@
 /********************************************************************/
 // First we include the libraries
 #include <Sensirion.h>       //library for our air temp/humidity sensor
-#include <SoftEasyTransfer.h>    //allows serial communication between microcontrollers
 /********************************************************************/
 
-SoftwareSerial mySerial(10, 11);
+
+
 
 //Definitions for bilge pump
 #define Water_Level_Sensor 5
-#define Pump 9
+#define Pump 13
 
 // Definition for voltage sensor input
 #define VoltageSense A1
@@ -51,52 +51,24 @@ float Vin = 0.0;
 
 
 
+
+
 /********************************************************************/
 Sensirion tempSensor = Sensirion(dataPin, clockPin);
 
 /********************************************************************/
-//create serial communication object
-SoftEasyTransfer ET;
-
-struct SEND_DATA_STRUCTURE {
-  //put your variable definitions here for the data you want to send
-  //THIS MUST BE EXACTLY THE SAME ON THE OTHER MICROCONTROLLER
-
-  //variables for temperature and salinity sensors
-  float temperature;
-  float humidity;
-  float dewpoint;
-  float steinhart;
-  uint16_t SalReading;
-
-  //variables for voltage
-  uint16_t Vin;
-
-  //variable for water level sensor
-  uint16_t FloatSwitch;
-
-  //variable to assign a "state of charge designator.
-  uint16_t BatterySOC;
-};
-
-//give a name to the group of data
-SEND_DATA_STRUCTURE sensorData;
-
 
 
 void setup(void)
 {
-  mySerial.begin(9600);
+
   Serial.begin(9600);
-
-  //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
-  ET.begin(details(sensorData), &mySerial);
-
 
   //initialize pins
   pinMode(Water_Level_Sensor, INPUT);
   pinMode(Pump, OUTPUT);
   pinMode(VoltageSense, INPUT);
+  
 
 }
 
@@ -104,6 +76,7 @@ void setup(void)
 
 void loop(void)
 {
+
 
   //Read and calculate analog NTC thermisitor
   ADCvalue = analogRead(NTCPin);
@@ -126,9 +99,22 @@ void loop(void)
   Serial.print("Water Temperature ");
   Serial.print(steinhart);
   Serial.println(" oC");
+
+  //math for output
+  int WTemp;
+  WTemp = constrain(WTemp, 0, 177);
+  WTemp = mapfloat(steinhart, -55,125,0,177);
+
+  Serial.print("Water Temperature: Analog Output: ");
+  Serial.print(WTemp);
+  Serial.println(" PWM Value");
+  analogWrite(10,WTemp);
+
+  
   //end thermristor calculations and output
 
-  //Read Sensirion sensor
+
+/*  //Read Sensirion sensor
   tempSensor.measure(&temperature, &humidity, &dewpoint);
   Serial.println(" ");
   Serial.print("Air Temperature: ");
@@ -138,6 +124,7 @@ void loop(void)
   Serial.print(" %, Dewpoint: ");
   Serial.print(dewpoint);
   Serial.print(" C");
+*/ 
 
   //Read salinity sensor
   float sal = analogRead(salinity);
@@ -147,6 +134,19 @@ void loop(void)
   Serial.print(SalReading);
   Serial.println(" ppt");
 
+  //math for salinity analog output
+  int Salinity;
+  Salinity = constrain(Salinity, 0, 177);
+  Salinity = mapfloat(SalReading, 0,177,0,177);
+
+  Serial.print("Salinity: Analog Output: ");
+  Serial.print(Salinity);
+  Serial.println(" PWM Value");
+  analogWrite(9,Salinity);
+
+
+  
+
   //read float switch state
   FloatSwitch = digitalRead(Water_Level_Sensor);
 
@@ -154,10 +154,12 @@ void loop(void)
   if (FloatSwitch == HIGH) {
   Serial.println( "WATER LEVEL - LOW");
     digitalWrite(Pump, LOW);
+    digitalWrite(12, LOW);
   }
   else {
     Serial.println( "WATER LEVEL - HIGH");
     digitalWrite(Pump, HIGH);
+    digitalWrite(12, HIGH);
   }
 
   //Read Voltage input
@@ -170,8 +172,13 @@ void loop(void)
   Serial.print(Vin);
   Serial.println("");
 
+
+
+
+
   //assign a battery state of charge number depending on the Vin.  We can use this number to limit certain functions based on the battery's current remaining capacity.
 
+/*
   if (Vin > 12.50)
 {
   BatterySOC = 1;   //our battery is "fully charged"  >80% State of Charge
@@ -190,7 +197,12 @@ else if (Vin <= 1165) {
   Serial.print(BatterySOC);
   Serial.println("");
 
-  ET.sendData();   //Send all our data over the serial port to teensy
+*/
 
   delay(2500);
+}
+
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
+ return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
