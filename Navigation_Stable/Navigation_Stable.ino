@@ -9,9 +9,9 @@
 #include <PID_v1.h>     //library for PID calculations
 //#include <SoftwareSerial.h>
 #include <Adafruit_FONA.h>    //library for cellular radio
-#include <EasyTransfer.h>     //library for microcontroller to microcontroller communication over serial.
+//#include <EasyTransfer.h>     //library for microcontroller to microcontroller communication over serial.
 #include <GOFi2cOLED.h> //library for OLED display
-
+#include <Sensirion.h>       //library for our air temp/humidity sensor
 
 #define _TASK_SLEEP_ON_IDLE_RUN  //tells scheduler to put processor to sleep if doing nothing.
 #define _TASK_TIMECRITICAL //allows designation of a time critical task(s) I haven't used this yet or know how -Aaron. 
@@ -19,7 +19,18 @@
 //Buzzer pin definition
 #define buzzer 34
 
+//Pin declarations for Sensirion temp sensor
+const uint8_t dataPin  =  4;
+const uint8_t clockPin =  3;
 
+// Definition for voltage sensor input
+#define VoltageSense 14
+
+// Definition for water temperatur input
+#define WaterTemp 15
+
+// Definition for Salinity Input
+#define Salinity 16
 
 //Fona definitions
 #define FONA_RX 10
@@ -43,6 +54,7 @@ sensors_vec_t   orientation;
 /*LET US DEFINE SOME VARIABLES*/
 float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA; /* Update this with the correct SLP for accurate altitude measurements */
 unsigned long last = 0UL; // For stats that happen every 5 seconds
+
 
 /*STEERING PID VARIABLES*/
 double pos = 90;    // variable to store the servo position. Set it initially to center (neutral posistion)
@@ -82,16 +94,20 @@ float temperature ;
 float humidity;
 float dewpoint;
 float steinhart;
-uint16_t SalReading;
+int SalReading;
 
-//variables for voltage
-float Vin;
+//Variables for voltage input calculation
+float Vout = 0.0;
+float R1 = 70000;
+float R2 = 10000;
+float Vread = 0;
+float Vin = 0.0;
 
 //variable for water level sensor
-uint16_t FloatSwitch;
+int FloatSwitch;
 
 //variable to assign a "state of charge designator.
-uint16_t BatterySOC;
+int BatterySOC;
 
 /******************************/
 
@@ -115,6 +131,12 @@ PID PIDRudder(&Heading, &pidoutput, &courseToWaypoint, Kp, Ki, Kd, DIRECT );
 //OLED Object for Display Screen
 GOFi2cOLED OLED;
 
+/********************************************************************/
+Sensirion tempSensor = Sensirion(dataPin, clockPin);
+
+/********************************************************************/
+
+/*
 
 //**********EASY TRANFER SET UP**********
 //create object for mcu to mcu serial communication
@@ -143,6 +165,7 @@ struct RECEIVE_DATA_STRUCTURE {
 
 //give a name to the group of data
 RECEIVE_DATA_STRUCTURE sensorData;
+*/
 
 //***************************************
 
@@ -178,14 +201,17 @@ void t3Callback() {
 void setup()
 {
 
+  pinMode(VoltageSense, INPUT);
   pinMode(buzzer, OUTPUT);
+  pinMode(WaterTemp, INPUT);
+  pinMode(Salinity, INPUT);
 
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
-  Serial3.begin(9600);              //Serial communication from arduino reading sensors
+  //Serial3.begin(9600);              //Serial communication from arduino reading sensors
 
   //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
-  ET.begin(details(sensorData), &Serial3);
+  //ET.begin(details(sensorData), &Serial3);
 
   beep(1);  //a beep to announce I am on.
 
@@ -298,8 +324,8 @@ void loop()
   /*End GPS*/
 
 
-
-  /*GET DATA FROM SENSORS*/
+/*
+  /*GET DATA FROM SENSORS
   if (ET.receiveData()) {
     //this is how you access the variables. [name of the group].[variable name]
     //variables for temperature and salinity sensors
@@ -313,7 +339,8 @@ void loop()
     BatterySOC = BatterySOC;
   }
   delay(100);
-  
+
+  */
   getIMU();
   Steering(courseToWaypoint);
 
@@ -322,4 +349,7 @@ void loop()
 }
 
 
-
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
+ return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}

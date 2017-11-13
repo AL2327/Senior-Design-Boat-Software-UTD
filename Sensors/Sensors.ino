@@ -16,9 +16,12 @@
 // Definition for salinity sensor input
 #define salinity 14
 
+/*
 //Pin declarations for Sensirion temp sensor
 const uint8_t dataPin  =  4;
 const uint8_t clockPin =  3;
+*/
+
 
 //Variables for NTC Thermristor
 byte NTCPin = A2;
@@ -67,7 +70,7 @@ void setup(void)
   //initialize pins
   pinMode(Water_Level_Sensor, INPUT);
   pinMode(Pump, OUTPUT);
-  pinMode(VoltageSense, INPUT);
+//  pinMode(VoltageSense, INPUT);
   
 
 }
@@ -101,7 +104,7 @@ void loop(void)
   Serial.println(" oC");
 
   //math for output
-  int WTemp;
+  float WTemp;
   WTemp = constrain(WTemp, 0, 177);
   WTemp = mapfloat(steinhart, -55,125,0,177);
 
@@ -114,7 +117,7 @@ void loop(void)
   //end thermristor calculations and output
 
 
-/*  //Read Sensirion sensor
+  //Read Sensirion sensor
   tempSensor.measure(&temperature, &humidity, &dewpoint);
   Serial.println(" ");
   Serial.print("Air Temperature: ");
@@ -124,7 +127,7 @@ void loop(void)
   Serial.print(" %, Dewpoint: ");
   Serial.print(dewpoint);
   Serial.print(" C");
-*/ 
+
 
   //Read salinity sensor
   float sal = analogRead(salinity);
