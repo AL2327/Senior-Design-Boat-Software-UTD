@@ -9,9 +9,9 @@
 #include <PID_v1.h>     //library for PID calculations
 //#include <SoftwareSerial.h>
 #include <Adafruit_FONA.h>    //library for cellular radio
-//#include <EasyTransfer.h>     //library for microcontroller to microcontroller communication over serial.
 #include <GOFi2cOLED.h> //library for OLED display
-#include <Sensirion.h>       //library for our air temp/humidity sensor
+
+
 
 #define _TASK_SLEEP_ON_IDLE_RUN  //tells scheduler to put processor to sleep if doing nothing.
 #define _TASK_TIMECRITICAL //allows designation of a time critical task(s) I haven't used this yet or know how -Aaron. 
@@ -19,18 +19,20 @@
 //Buzzer pin definition
 #define buzzer 34
 
-//Pin declarations for Sensirion temp sensor
-const uint8_t dataPin  =  4;
-const uint8_t clockPin =  3;
-
 // Definition for voltage sensor input
-#define VoltageSense 14
+#define VoltageSense A0   //pin 14
 
-// Definition for water temperatur input
-#define WaterTemp A18
+// Definition for water temperature input
+#define WaterTemp A18   //pin 37
 
 // Definition for Salinity Input
-#define Salinity A19
+#define Salinity A19    //pin 38
+
+// Definition for Air Temperature input
+#define AirTempPin A7      //pin 21
+
+// Definition for Humidity
+#define HumidityPin A8      //pin 22
 
 //Fona definitions
 #define FONA_RX 10
@@ -38,7 +40,10 @@ const uint8_t clockPin =  3;
 #define FONA_RST 20
 #define HWSERIAL Serial2
 
+Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fona
 
+// The serial connection to the GPS device
+#define ss Serial1
 
 
 /* Assign a unique ID to the IMU sensors */
@@ -81,8 +86,6 @@ double Heading = 0; //Current vessel heading in degress.
 /*0 = full reverse, 90=STOP, 180=full forward*/
 int THRT = 90; //variable to stop commanded throttle posistion.
 
-int beeping; //variable to store number of beeps we want
-
 /*Fona Variables*/
 char replybuffer[255];  // this is a large buffer for replies
 uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout = 0);
@@ -124,15 +127,19 @@ int STempSample[SnumReadings];
 int SreadIndex = 0;
 int Stotal = 0;
 int STemp;
+
+
+int beeping; //variable to store number of beeps we want
+
+/******************************/
+/******************************/
 /******************************/
 
-Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fona
+
 
 // The TinyGPS++ object
 TinyGPSPlus gps;
 
-// The serial connection to the GPS device
-#define ss Serial1
 
 //Servo Object for Steering
 Servo Rudder;
@@ -146,41 +153,6 @@ PID PIDRudder(&Heading, &pidoutput, &courseToWaypoint, Kp, Ki, Kd, DIRECT );
 //OLED Object for Display Screen
 GOFi2cOLED OLED;
 
-/********************************************************************/
-Sensirion tempSensor = Sensirion(dataPin, clockPin);
-
-/********************************************************************/
-
-/*
-
-  //**********EASY TRANFER SET UP**********
-  //create object for mcu to mcu serial communication
-  EasyTransfer ET;
-
-  struct RECEIVE_DATA_STRUCTURE {
-  //put your variable definitions here for the data you want to send
-  //THIS MUST BE EXACTLY THE SAME ON THE OTHER MICROCONTROLLER
-
-  //variables for temperature and salinity sensors
-  float temperature;
-  float humidity;
-  float dewpoint;
-  float steinhart;
-  uint16_t SalReading;
-
-  //variables for voltage
-  float Vin;
-
-  //variable for water level sensor
-  uint16_t FloatSwitch;
-
-  //variable to assign a "state of charge designator.
-  uint16_t BatterySOC;
-  };
-
-  //give a name to the group of data
-  RECEIVE_DATA_STRUCTURE sensorData;
-*/
 
 //***************************************
 
@@ -225,17 +197,13 @@ void setup()
 
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
-  //Serial3.begin(9600);              //Serial communication from arduino reading sensors
-
-  //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
-  //ET.begin(details(sensorData), &Serial3);
 
   beep(1);  //a beep to announce I am on.
 
   /*OLED SETUP*/
   OLED.init(0x3C); //Set the I2C addr for the OLED display
-  //OLED.display();  //show splashscreen
-  //delay(1000);        //wait one second
+  OLED.display();  //show splashscreen
+  delay(250);        //wait 1/4 second...we're just showing that screen works and has power.
   OLED.clearDisplay(); //Clear Display
   OLED.setTextSize(1);  //Set text size to smallest
   OLED.setTextColor(WHITE);  //Set text to black background, color text.
@@ -263,22 +231,16 @@ void setup()
 
   /* Initialise Rudder */
   Rudder.attach(35);  // attaches the servo on pin 35 to the servo object
-
-  Rudder.write(pos);  //send rudder to mid position
-
-  //Serial.println("Rudder Amidships.  3 Second Hold.");
-  //delay(3000);      // wait for 3 seconds after rudder moves.
-
-  Serial.println("Rudder Sweep. KEEP CLEAR!");
   beep(3);  //3 beeps to register warning
-  //delay(3000);
+  Rudder.write(pos);  //send rudder to mid position
+  Serial.println("Rudder Sweep. KEEP CLEAR!");
 
-  for (pos = 30; pos <= 150; pos += 1) { // goes from 30 degrees to 150 degrees
+  for (pos = 35; pos <= 145; pos += 1) { // goes from 30 degrees to 150 degrees
     // in steps of 1 degree
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
     delay(10);                       // waits 15ms for the servo to reach the position
   }
-  for (pos = 150; pos >= 30; pos -= 1) { // goes from 150 degrees to 30 degrees
+  for (pos = 145; pos >= 35; pos -= 1) { // goes from 150 degrees to 30 degrees
     Rudder.write(pos);              // tell servo to go to position in variable 'pos'
     delay(10);                       // waits 15ms for the servo to reach the position
   }
@@ -288,7 +250,6 @@ void setup()
   /* Initialize Throttle*/
   Serial.println("Throttle Setup. KEEP CLEAR!");
   beep(3);  //3 beeps to register warning
-
   Throttle.attach(36); //attatch throttle to pin 36 to the servo object.
 
   /*set throttle from neutral to full foward.*/
@@ -302,7 +263,6 @@ void setup()
     Throttle.write(THRT);
     delay(10);
   }
-
   THRT = 90;
   Throttle.write(THRT); //send command to set throttle to 0 or int value 90.
   Serial.println("Throttle Set to ZER0 (NEUTRAL)");
@@ -340,24 +300,6 @@ void loop()
   getGPS();
   /*End GPS*/
 
-
-  /*
-    /*GET DATA FROM SENSORS
-    if (ET.receiveData()) {
-      //this is how you access the variables. [name of the group].[variable name]
-      //variables for temperature and salinity sensors
-      temperature = sensorData.temperature;
-      humidity = sensorData.humidity;
-      dewpoint = sensorData.dewpoint;
-      steinhart = sensorData.steinhart;
-      SalReading = sensorData.SalReading;
-      Vin = sensorData.Vin;
-      FloatSwitch = sensorData.FloatSwitch;
-      BatterySOC = BatterySOC;
-    }
-    delay(100);
-
-  */
 
   WaterTempSample();
   SalinitySample();

@@ -16,6 +16,7 @@ void sensors() {
 
   //end water temp
 
+/*
   //Read Sensirion sensor
   tempSensor.measure(&temperature, &humidity, &dewpoint);
   Serial.println(" ");
@@ -26,9 +27,10 @@ void sensors() {
   Serial.print(" %, Dewpoint: ");
   Serial.print(dewpoint);
   Serial.print(" C");
-
+*/
 
   //salinity parts per thousand
+  
   //float SalInput;
   //SalInput = analogRead(Salinity);
   //SalInput = mapfloat(SalInput, 0, 1023, 0, 177);
@@ -42,6 +44,39 @@ void sensors() {
   Serial.println("Salinity: ");
   Serial.print(SalReading);
   Serial.println(" ppt");
+
+  //end salinity
+
+  //begin airtemp/humidity
+  
+  float ATemp = analogRead(AirTempPin);
+  Serial.println("Air Temp  PWM Input ");
+  Serial.print(ATemp);
+  temperature = mapfloat(ATemp, 0, 1023, -40, 120);
+
+  float HTemp = analogRead(HumidityPin);
+  Serial.println("Humidity PWM Input ");
+  Serial.print(HTemp);
+  humidity = mapfloat(HTemp, 0, 1023, 0, 100);
+  
+  //dewpoint = ((humidity/100)^(1/8))*(112+0.9*temperature)+(0.1*temperature)-112;
+  
+  Serial.println(" ");
+  Serial.print("Air Temperature: ");
+  Serial.print(temperature);
+  Serial.print(" C, Atm. Humidity: ");
+  Serial.print(humidity);
+  //Serial.print(" %, Dewpoint: ");
+  //Serial.print(dewpoint);
+  //Serial.print(" C");
+
+
+
+
+
+
+
+  
 
   if (FloatSwitch == HIGH) {
     Serial.println( "WATER LEVEL - LOW");

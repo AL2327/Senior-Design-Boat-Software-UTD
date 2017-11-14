@@ -10,77 +10,111 @@ void Steering(double courseToWaypoint) {
   //Serial.print(F(" degrees. ["));
   //Serial.println("");
 
-  float courseError = (Heading - courseToWaypoint);
+  int courseError = (Heading - courseToWaypoint);
 
   Serial.println("Course Error: "); //
   Serial.print(courseError);
   Serial.println("");
 
+  int heading = (int)Heading % 360;           //which way we are going as integer mod 360
+  int bearing = (int)courseToWaypoint % 360;  //which way we want to go as integer mod 360
+
+  int dir = ((360 - ((int)heading - (int)bearing)) % 360);
 
 
-
-if(courseError <= -149 && courseError >= -179)
-{
-        pos = 150;        //make it turn full left
-}
-
-else if(courseError >= -148 && courseError <=-100)
-{
-              pos=pos+30;
-}
-else if(courseError >= -99  && courseError <= -30)
-{
-              pos=pos+15;
-}
-
-else if(courseError >=-29 && courseError <=-10)
-{
-              pos=pos+10;
-}
-
-else if(courseError >=9 && courseError <0)
-{
-              pos=pos+3;
-}
-
-/*Other direction*/
-if(courseError >= 149 && courseError <= 179)
-{
-        pos = 150;        
-}
-
-else if(courseError <= 148 && courseError >=100)
-{
-        pos=pos-30;
-}
-else if(courseError <= 99  && courseError >= 30)
-{
-        pos=pos-15;
-}
-
-else if(courseError <=29 && courseError >=10)
-{
-        pos=pos-10;
-}
-
-else if(courseError <=9 && courseError >0)
-{
-        pos=pos-3;
-}
-
-else if(courseError == 0){
-    pos=90;
-}
-
-pos=constrain(pos, 30, 150);
-Rudder.write(pos);
-
-  Serial.println("RUDDER COMMAND: "); //
-  Serial.println("Commanded Rudder Posistion: ");
-  Serial.print(pos);
+  Serial.println("DIRECTION: "); //
+  Serial.print(dir);
   Serial.println("");
 
-  
+
+  if (dir < 180) {
+    if (dir > 30) {
+      pos = 135;
+    }
+    else {
+      
+      pos = 90 + (360 - dir) / 2;
+    }
+  }
+  else if (dir >= 180) {
+    if ((360 - dir) > 30)
+    {
+      pos  = 45;
+    }
+    else
+    {
+      pos = 90 - dir / 2;
+    }
+  }
+
+else if (courseError == 0) {
+  pos = 90;
+}
+
+pos = constrain(pos, 35, 145);
+Rudder.write(pos);
+
+Serial.println("RUDDER COMMAND: "); //
+Serial.println("Commanded Rudder Posistion: 35-145, 90=Straight ");
+Serial.print(pos);
+Serial.println("");
+
+
+/*
+  if(courseError <= -149 && courseError >= -179)
+  {
+        pos = 150;        //make it turn full left
+  }
+
+  else if(courseError >= -148 && courseError <=-100)
+  {
+              pos=pos+30;
+  }
+  else if(courseError >= -99  && courseError <= -30)
+  {
+              pos=pos+15;
+  }
+
+  else if(courseError >=-29 && courseError <=-10)
+  {
+              pos=pos+10;
+  }
+
+  else if(courseError >=9 && courseError <0)
+  {
+              pos=pos+3;
+  }
+
+  //*Other direction
+  if(courseError >= 149 && courseError <= 179)
+  {
+        pos = 150;
+  }
+
+  else if(courseError <= 148 && courseError >=100)
+  {
+        pos=pos-30;
+  }
+  else if(courseError <= 99  && courseError >= 30)
+  {
+        pos=pos-15;
+  }
+
+  else if(courseError <=29 && courseError >=10)
+  {
+        pos=pos-10;
+  }
+
+  else if(courseError <=9 && courseError >0)
+  {
+        pos=pos-3;
+  }
+
+*/
+
+
+
+
 /*  /*STEERING CODE
   PIDRudder.Compute();          // PID computation
   pos = map(pidoutput, 0, 255, 0, 180);  //map PID output(double) to pos(integer) range
