@@ -2,22 +2,22 @@ void WaterTempSample(){
   
 
   // subtract the last reading:
-  total = total - WTempSample[readIndex];
+  Wtotal = Wtotal - WTempSample[WreadIndex];
   // read from the sensor:
-  WTempSample[readIndex] = analogRead(WaterTemp);
+  WTempSample[WreadIndex] = analogRead(WaterTemp);
   // add the reading to the total:
-  total = total + WTempSample[readIndex];
+  Wtotal = Wtotal + WTempSample[WreadIndex];
   // advance to the next position in the array:
-  readIndex = readIndex + 1;
+  WreadIndex = WreadIndex + 1;
   // if we're at the end of the array...
-  if (readIndex >= numReadings) {
+  if (WreadIndex >= WnumReadings) {
     // ...wrap around to the beginning:
-    readIndex = 0;
+    WreadIndex = 0;
   }
   // calculate the average:
-  WTemp = total / numReadings;
+  WTemp = Wtotal / WnumReadings;
 
-  //Serial.print("Water Temperature AVG ");
-  //Serial.print(WTemp, 4);
+  //Serial.println("Water Temperature AVG: ");
+  //Serial.print(WTemp);
 
 }

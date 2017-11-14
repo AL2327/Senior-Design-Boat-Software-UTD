@@ -10,7 +10,7 @@ void Steering(double courseToWaypoint) {
   //Serial.print(F(" degrees. ["));
   //Serial.println("");
 
-  float courseError = abs((Heading - courseToWaypoint));
+  float courseError = (Heading - courseToWaypoint);
 
   Serial.println("Course Error: "); //
   Serial.print(courseError);

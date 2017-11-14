@@ -4,12 +4,13 @@ void sensors() {
 
 
   //WTemp=mapfloat(WTemp, 0,1023, 0,177);
-  Serial.print("Water Temperature Input ");
-  Serial.print(WTemp, 4);
+  //WTemp=WTemp+100;
+  Serial.println("Water Temperature Input ");
+  Serial.print(WTemp);
 
   steinhart = mapfloat(WTemp, 0, 1023, -55, 125);
 
-  Serial.print("Water Temperature ");
+  Serial.println("Water Temperature ");
   Serial.print(steinhart);
   Serial.println(" oC");
 
@@ -28,14 +29,14 @@ void sensors() {
 
 
   //salinity parts per thousand
-  float SalInput;
-  SalInput = analogRead(Salinity);
-  SalInput = mapfloat(SalInput, 0, 1023, 0, 177);
+  //float SalInput;
+  //SalInput = analogRead(Salinity);
+  //SalInput = mapfloat(SalInput, 0, 1023, 0, 177);
   Serial.println("Salinity  PWM Input ");
-  Serial.print(SalInput);
+  Serial.print(STemp);
 
 
-  SalReading = mapfloat(SalInput, 0, 177, 0, 177);
+  SalReading = mapfloat(STemp, 0, 1023, 0, 177);
 
   Serial.println(" ");
   Serial.println("Salinity: ");
@@ -54,7 +55,7 @@ void sensors() {
   Vread = analogRead(VoltageSense);
 
   //Do some ENA Math and output voltage.
-  Vout = (Vread * 5.0) / 1024;
+  Vout = (Vread * 3.3) / 1024;
   Vin = Vout / (R2 / (R1 + R2));
   Serial.println("Input Voltage = ");
   Serial.print(Vin);

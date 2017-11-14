@@ -27,10 +27,10 @@ const uint8_t clockPin =  3;
 #define VoltageSense 14
 
 // Definition for water temperatur input
-#define WaterTemp 21
+#define WaterTemp A18
 
 // Definition for Salinity Input
-#define Salinity 16
+#define Salinity A19
 
 //Fona definitions
 #define FONA_RX 10
@@ -111,12 +111,19 @@ int BatterySOC;
 
 
 //water temmperature input averaging variables
-const int numReadings = 1000;
-int WTempSample[numReadings];
-int readIndex = 0;
-int total = 0;
+const int WnumReadings = 750;
+int WTempSample[WnumReadings];
+int WreadIndex = 0;
+int Wtotal = 0;
 int WTemp;
 
+
+//water temmperature input averaging variables
+const int SnumReadings = 750;
+int STempSample[SnumReadings];
+int SreadIndex = 0;
+int Stotal = 0;
+int STemp;
 /******************************/
 
 Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fona
@@ -352,7 +359,8 @@ void loop()
 
   */
 
-WaterTempSample();
+  WaterTempSample();
+  SalinitySample();
   runner.execute();
 
 }
