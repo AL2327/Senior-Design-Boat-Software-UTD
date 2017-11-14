@@ -9,6 +9,7 @@
 #include <PID_v1.h>     //library for PID calculations
 //#include <SoftwareSerial.h>
 #include <Adafruit_FONA.h>    //library for cellular radio
+//#include <EasyTransfer.h>     //library for microcontroller to microcontroller communication over serial.
 #include <GOFi2cOLED.h> //library for OLED display
 #include <Sensirion.h>       //library for our air temp/humidity sensor
 
@@ -110,21 +111,11 @@ int BatterySOC;
 
 
 //water temmperature input averaging variables
-const int WnumReadings = 1000;
-float WTempSample[WnumReadings];
-int WreadIndex = 0;
-int Wtotal = 0;
-float WTemp;
-
-//Salinity temmperature input averaging variables
-const int SnumReadings = 1000;
-float SaltSample[SnumReadings];
-int SreadIndex = 0;
-int Stotal = 0;
-float SalInput;
-
-
-
+const int numReadings = 1000;
+int WTempSample[numReadings];
+int readIndex = 0;
+int total = 0;
+int WTemp;
 
 /******************************/
 
@@ -153,8 +144,36 @@ Sensirion tempSensor = Sensirion(dataPin, clockPin);
 
 /********************************************************************/
 
+/*
 
+  //**********EASY TRANFER SET UP**********
+  //create object for mcu to mcu serial communication
+  EasyTransfer ET;
 
+  struct RECEIVE_DATA_STRUCTURE {
+  //put your variable definitions here for the data you want to send
+  //THIS MUST BE EXACTLY THE SAME ON THE OTHER MICROCONTROLLER
+
+  //variables for temperature and salinity sensors
+  float temperature;
+  float humidity;
+  float dewpoint;
+  float steinhart;
+  uint16_t SalReading;
+
+  //variables for voltage
+  float Vin;
+
+  //variable for water level sensor
+  uint16_t FloatSwitch;
+
+  //variable to assign a "state of charge designator.
+  uint16_t BatterySOC;
+  };
+
+  //give a name to the group of data
+  RECEIVE_DATA_STRUCTURE sensorData;
+*/
 
 //***************************************
 
@@ -199,6 +218,10 @@ void setup()
 
   Serial.begin(115200);             //Serial connection to USB->Computer Serial Monitor
   ss.begin(9600);                   //Serial connection to GPS
+  //Serial3.begin(9600);              //Serial communication from arduino reading sensors
+
+  //start the EasyTransfer_TX library, pass in the data details and the name of the serial port. Can be Serial, Serial1, Serial2, etc.
+  //ET.begin(details(sensorData), &Serial3);
 
   beep(1);  //a beep to announce I am on.
 
@@ -233,9 +256,15 @@ void setup()
 
   /* Initialise Rudder */
   Rudder.attach(35);  // attaches the servo on pin 35 to the servo object
+
   Rudder.write(pos);  //send rudder to mid position
+
+  //Serial.println("Rudder Amidships.  3 Second Hold.");
+  //delay(3000);      // wait for 3 seconds after rudder moves.
+
   Serial.println("Rudder Sweep. KEEP CLEAR!");
   beep(3);  //3 beeps to register warning
+  //delay(3000);
 
   for (pos = 30; pos <= 150; pos += 1) { // goes from 30 degrees to 150 degrees
     // in steps of 1 degree
@@ -249,10 +278,10 @@ void setup()
   pos = 90;
   Rudder.write(pos);  //send rudder to mid position
 
-
   /* Initialize Throttle*/
   Serial.println("Throttle Setup. KEEP CLEAR!");
   beep(3);  //3 beeps to register warning
+
   Throttle.attach(36); //attatch throttle to pin 36 to the servo object.
 
   /*set throttle from neutral to full foward.*/
@@ -273,7 +302,7 @@ void setup()
 
   /* Initialize Steering PID*/
   Serial.println("Steering PID Set to AUTOMATIC");
-  delay(50);
+  delay(100);
   PIDRudder.SetMode(AUTOMATIC);
 
   /* Initialize Fona */
@@ -305,6 +334,25 @@ void loop()
   /*End GPS*/
 
 
+  /*
+    /*GET DATA FROM SENSORS
+    if (ET.receiveData()) {
+      //this is how you access the variables. [name of the group].[variable name]
+      //variables for temperature and salinity sensors
+      temperature = sensorData.temperature;
+      humidity = sensorData.humidity;
+      dewpoint = sensorData.dewpoint;
+      steinhart = sensorData.steinhart;
+      SalReading = sensorData.SalReading;
+      Vin = sensorData.Vin;
+      FloatSwitch = sensorData.FloatSwitch;
+      BatterySOC = BatterySOC;
+    }
+    delay(100);
+
+  */
+
+WaterTempSample();
   runner.execute();
 
 }

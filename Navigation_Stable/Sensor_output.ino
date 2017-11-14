@@ -1,15 +1,15 @@
 void sensors() {
 
-  SensorAVG(); //call function to take 1,000 samples of incoming water temp and salinity sensor and get an avg value. 
-  //Doing it once, or even a hundred times, gives eratic values as the sample rate of the teensy is fast enough to sample inbetween the PWM frequency of the arduinos output.
-  
-  //Water Temp.
+
+
+
+  //WTemp=mapfloat(WTemp, 0,1023, 0,177);
   Serial.print("Water Temperature Input ");
   Serial.print(WTemp, 4);
 
   steinhart = mapfloat(WTemp, 0, 1023, -55, 125);
 
-  Serial.println("Water Temperature ");
+  Serial.print("Water Temperature ");
   Serial.print(steinhart);
   Serial.println(" oC");
 
@@ -28,8 +28,15 @@ void sensors() {
 
 
   //salinity parts per thousand
+  float SalInput;
+  SalInput = analogRead(Salinity);
+  SalInput = mapfloat(SalInput, 0, 1023, 0, 177);
+  Serial.println("Salinity  PWM Input ");
+  Serial.print(SalInput);
 
-  SalReading = mapfloat(SalInput, 0, 1023, 0, 177);
+
+  SalReading = mapfloat(SalInput, 0, 177, 0, 177);
+
   Serial.println(" ");
   Serial.println("Salinity: ");
   Serial.print(SalReading);
