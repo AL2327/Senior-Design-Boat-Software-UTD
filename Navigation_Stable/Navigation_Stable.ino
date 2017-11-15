@@ -163,7 +163,7 @@ void t2Callback();
 void t3Callback();
 
 // Tasks
-Task t1(1000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
+Task t1(500, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
 Task t2(60000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task do fona
 Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 
