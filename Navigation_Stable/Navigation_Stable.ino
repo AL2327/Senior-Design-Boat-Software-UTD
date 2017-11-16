@@ -114,7 +114,7 @@ int BatterySOC;
 
 
 //water temmperature input averaging variables
-const int WnumReadings = 750;
+const int WnumReadings = 50;
 int WTempSample[WnumReadings];
 int WreadIndex = 0;
 int Wtotal = 0;
@@ -122,7 +122,7 @@ int WTemp;
 
 
 //water temmperature input averaging variables
-const int SnumReadings = 750;
+const int SnumReadings = 50;
 int STempSample[SnumReadings];
 int SreadIndex = 0;
 int Stotal = 0;

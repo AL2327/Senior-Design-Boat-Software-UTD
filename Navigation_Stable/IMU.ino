@@ -1,8 +1,8 @@
 void getIMU()
 {
-/**************************************************************************/
-/* IMU SECTION */
-/**************************************************************************/
+  /**************************************************************************/
+  /* IMU SECTION */
+  /**************************************************************************/
 
 
   /* Calculate pitch and roll from the raw accelerometer data */
@@ -18,31 +18,38 @@ void getIMU()
     Serial.print(F("; "));
     Serial.println();
   }
-  
+
 
   /*GET HEADING*/
   mag.getEvent(&mag_event);
-  if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
-  {
-    /* 'orientation' should have valid .heading data now */
-    Serial.print(F("Heading: "));
-    Serial.print(orientation.heading);
-    Serial.print(F("; "));
-    Serial.println();
-    Heading = orientation.heading;
+  accel.getEvent(&accel_event);
+  if (dof.magTiltCompensation(SENSOR_AXIS_Z, &mag_event, &accel_event)) {
+
+
+    if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
+    {
+      /* 'orientation' should have valid .heading data now */
+
+      Heading = orientation.heading;
+      Heading = Heading - 105;
+      Serial.print(F("Heading: "));
+      Serial.print(Heading);
+      Serial.print(F("; "));
+      Serial.println();
+    }
   }
   /*End Heading*/
-  
+
   Serial.println(F(""));
 
   Serial.print("WAYPOINT ");
   Serial.print(WPCount);
-  Serial.print(" Set as: LAT: ");  
-  Serial.print(WaypointLAT[WPCount],6);
+  Serial.print(" Set as: LAT: ");
+  Serial.print(WaypointLAT[WPCount], 6);
   Serial.print(" LONG: ");
-  Serial.print(WaypointLONG[WPCount],6);
+  Serial.print(WaypointLONG[WPCount], 6);
   Serial.println();
-   
+
   Serial.print(F("Waypoint Distance="));
   Serial.print(distanceToWaypoint / 1000, 6);
   Serial.print(F(" km Course-to="));
@@ -53,6 +60,6 @@ void getIMU()
   Serial.print(distanceToWaypoint, 6);
   Serial.print(F(" m."));
   Serial.println(F(""));
-  
+
 }
 
