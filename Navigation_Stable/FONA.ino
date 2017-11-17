@@ -283,15 +283,6 @@ void FONA(char command) {
         break;
       }
 
-    case 'h': {
-        // hang up!
-        if (! fona.hangUp()) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        break;
-      }
 
     case 'p': {
         // pick up!
@@ -326,14 +317,18 @@ void FONA(char command) {
         // Retrieve SMS sender address/phone number.
         if (! fona.getSMSSender(smsn, replybuffer, 250)) {
           Serial.println("Failed!");
+          ValidMessage = false;
           break;
         }
         Serial.print(F("FROM: ")); Serial.println(replybuffer);
+
+        ReplytoPhoneNumber = int(replybuffer);      //save phone number of message sender
 
         // Retrieve SMS value.
         uint16_t smslen;
         if (! fona.readSMS(smsn, replybuffer, 250, &smslen)) { // pass in buffer and max len!
           Serial.println("Failed!");
+          ValidMessage = false;
           break;
         }
         Serial.print(F("***** SMS #")); Serial.print(smsn);
@@ -341,40 +336,9 @@ void FONA(char command) {
         Serial.println(replybuffer);
         Serial.println(F("*****"));
 
-        break;
-      }
-    case 'R': {
-        // read all SMS
-        int8_t smsnum = fona.getNumSMS();
-        uint16_t smslen;
-        int8_t smsn;
+        IncCommand[255] = replybuffer[255];           //this is our received command
+        ValidMessage = true;
 
-        if ( (type == FONA3G_A) || (type == FONA3G_E) ) {
-          smsn = 0; // zero indexed
-          smsnum--;
-        } else {
-          smsn = 1;  // 1 indexed
-        }
-
-        for ( ; smsn <= smsnum; smsn++) {
-          Serial.print(F("\n\rReading SMS #")); Serial.println(smsn);
-          if (!fona.readSMS(smsn, replybuffer, 250, &smslen)) {  // pass in buffer and max len!
-            Serial.println(F("Failed!"));
-            break;
-          }
-          // if the length is zero, its a special case where the index number is higher
-          // so increase the max we'll look at!
-          if (smslen == 0) {
-            Serial.println(F("[empty slot]"));
-            smsnum++;
-            continue;
-          }
-
-          Serial.print(F("***** SMS #")); Serial.print(smsn);
-          Serial.print(" ("); Serial.print(smslen); Serial.println(F(") bytes *****"));
-          Serial.println(replybuffer);
-          Serial.println(F("*****"));
-        }
         break;
       }
 
@@ -395,24 +359,24 @@ void FONA(char command) {
 
     case 's': {
         // send an SMS!
-        
+
         String msg1 = String(Heading);
         String msg2 = String(courseToWaypoint, 6);
         String msg3 = String(distanceToWaypoint / 1000, 6);
         String msg4 = String(WaypointLAT[WPCount], 6);
         String msg5 = String(WaypointLONG[WPCount], 6);
         String msg6 = String(WPCount, 3);
-        String msg7 = String(temperature,5);
-        String msg8 = String(humidity,2);
-        String msg9 = String(dewpoint,4);
+        String msg7 = String(temperature, 5);
+        String msg8 = String(humidity, 2);
+        String msg9 = String(dewpoint, 4);
         String msg10 = String(steinhart, 6);
-        String msg11 = String(SalReading,6);
+        String msg11 = String(SalReading, 6);
         String msg12 = String(Vin);
         String msg13 = String(BatterySOC);
         String msg14 = String(FloatSwitch);
-        
-        String msg = "WP#: " + msg6 + " \n " + "H: " + msg1 + " \n " + "C2WP: " + msg2 + "\n " + "D2WP: " + msg3 + " \n " + "Lat: " + msg4 + "\n " + "Long: " + msg5 + "\n " + "AT: " + msg7 + "\n " + "AH: " 
-        + msg8 + " \n " + "DP: " + msg9 + " \n " + "WT: " + msg10 + " \n " + "SAL: " + msg11 + " \n " + "V: " + msg12 + " \n " + "SoC: " + msg13 + " \n " + "B: " + msg14;
+
+        String msg = "WP#: " + msg6 + " \n " + "H: " + msg1 + " \n " + "C2WP: " + msg2 + "\n " + "D2WP: " + msg3 + " \n " + "Lat: " + msg4 + "\n " + "Long: " + msg5 + "\n " + "AT: " + msg7 + "\n " + "AH: "
+                     + msg8 + " \n " + "DP: " + msg9 + " \n " + "WT: " + msg10 + " \n " + "SAL: " + msg11 + " \n " + "V: " + msg12 + " \n " + "SoC: " + msg13 + " \n " + "B: " + msg14;
 
         char sendto[21] = "4698883192", message[300] ;
         for (int i = 0; i < msg.length() ; i++)
@@ -438,6 +402,109 @@ void FONA(char command) {
 
         break;
       }
+
+    case 'w': {
+        // send an SMS reply to acknowledge waypoint update!
+
+        String msg1 = String(WPCount,3);
+        String msg = "WP# Changed to : " + msg1 + ".";
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
+        }
+
+        //Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+        //Serial.println(message);
+        flushSerial();
+        if (! fona.sendSMS(sendto, message)) {
+          Serial.println(F("Failed"));
+        } else {
+          Serial.println(F("Sent!"));
+        }
+
+        break;
+      }
+
+    case 'h': {
+        // send an SMS reply to acknowledge halt command!
+
+        String msg = "VESSEL HALTED.";
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
+        }
+
+        //Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+        //Serial.println(message);
+        flushSerial();
+        if (! fona.sendSMS(sendto, message)) {
+          Serial.println(F("Failed"));
+        } else {
+          Serial.println(F("Sent!"));
+        }
+
+        break;
+      }      
+
+
+    case 'R': {
+        // send an SMS reply to acknowledge resume command!
+
+        String msg = "VESSEL RESUMING.";
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
+        }
+
+        //Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+        //Serial.println(message);
+        flushSerial();
+        if (! fona.sendSMS(sendto, message)) {
+          Serial.println(F("Failed"));
+        } else {
+          Serial.println(F("Sent!"));
+        }
+
+        break;
+      }  
+
+
+    case 'D': {
+        // send an SMS reply to acknowledge halt command!
+
+        String msg = "DEMO MODE.";
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
+        }
+
+        //Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+        //Serial.println(message);
+        flushSerial();
+        if (! fona.sendSMS(sendto, message)) {
+          Serial.println(F("Failed"));
+        } else {
+          Serial.println(F("Sent!"));
+        }
+
+        break;
+      }        
 
     case 'u': {
         // send a USSD!
@@ -566,42 +633,6 @@ void FONA(char command) {
           Serial.print(F("Fail code #")); Serial.println(returncode);
         }
 
-        break;
-      }
-    case 'w': {
-        // read website URL
-        uint16_t statuscode;
-        int16_t length;
-        char url[80];
-
-        flushSerial();
-        Serial.println(F("NOTE: in beta! Use small webpages to read!"));
-        Serial.println(F("URL to read (e.g. www.adafruit.com/testwifi/index.html):"));
-        Serial.print(F("http://")); readline(url, 79);
-        Serial.println(url);
-
-        Serial.println(F("****"));
-        if (!fona.HTTP_GET_start(url, &statuscode, (uint16_t *)&length)) {
-          Serial.println("Failed!");
-          break;
-        }
-        while (length > 0) {
-          while (fona.available()) {
-            char c = fona.read();
-
-            // Serial.write is too slow, we'll write directly to Serial register!
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-            loop_until_bit_is_set(UCSR0A, UDRE0); /* Wait until data register empty. */
-            UDR0 = c;
-#else
-            Serial.write(c);
-#endif
-            length--;
-            if (! length) break;
-          }
-        }
-        Serial.println(F("\n****"));
-        fona.HTTP_GET_end();
         break;
       }
 

@@ -49,12 +49,12 @@ void sensors() {
 
   //begin airtemp/humidity
   
-  float ATemp = analogRead(AirTempPin);
+  //float ATemp = analogRead(AirTempPin);
   Serial.println("Air Temp  PWM Input ");
   Serial.print(ATemp);
   temperature = mapfloat(ATemp, 0, 1023, -40, 120);
 
-  float HTemp = analogRead(HumidityPin);
+  //float HTemp = analogRead(HumidityPin);
   Serial.println("Humidity PWM Input ");
   Serial.print(HTemp);
   humidity = mapfloat(HTemp, 0, 1023, 0, 100);

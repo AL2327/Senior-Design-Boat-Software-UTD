@@ -7,11 +7,14 @@
 #include <TaskScheduler.h>  //library for task timing/manager
 #include <Servo.h>      //library for servo control
 #include <PID_v1.h>     //library for PID calculations
-//#include <SoftwareSerial.h>
 #include <Adafruit_FONA.h>    //library for cellular radio
 #include <GOFi2cOLED.h> //library for OLED display
+#include <stdlib.h>
 
 
+
+//*******************************************
+//*******************************************
 
 #define _TASK_SLEEP_ON_IDLE_RUN  //tells scheduler to put processor to sleep if doing nothing.
 #define _TASK_TIMECRITICAL //allows designation of a time critical task(s) I haven't used this yet or know how -Aaron. 
@@ -45,7 +48,6 @@ Adafruit_FONA fona = Adafruit_FONA(FONA_RST); //passing value of Fona_RST to fon
 // The serial connection to the GPS device
 #define ss Serial1
 
-
 /* Assign a unique ID to the IMU sensors */
 Adafruit_9DOF                dof   = Adafruit_9DOF();
 Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(30301);
@@ -54,6 +56,12 @@ Adafruit_LSM303_Mag_Unified   mag   = Adafruit_LSM303_Mag_Unified(30302);
 sensors_event_t accel_event;
 sensors_event_t mag_event;
 sensors_vec_t   orientation;
+
+//*******************************************
+//*******************************************
+      /*LET US DEFINE SOME VARIABLES*/
+//*******************************************
+//*******************************************
 
 
 /*LET US DEFINE SOME VARIABLES*/
@@ -90,6 +98,12 @@ int THRT = 90; //variable to stop commanded throttle posistion.
 char replybuffer[255];  // this is a large buffer for replies
 uint8_t readline(char *buff, uint8_t maxbuff, uint16_t timeout = 0);
 uint8_t type;
+int ReplytoPhoneNumber = 0;
+char IncCommand[255];
+String ComRcv;
+boolean ValidMessage;
+
+
 
 /*MCU to MCU Easy transfer variables AKA: Sensor Variables*/
 //variables for temperature and salinity sensors
@@ -128,12 +142,28 @@ int SreadIndex = 0;
 int Stotal = 0;
 int STemp;
 
+//air temmperature input averaging variables
+const int AnumReadings = 50;
+int ATempSample[AnumReadings];
+int AreadIndex = 0;
+int Atotal = 0;
+int ATemp;
+
+//Humidity temmperature input averaging variables
+const int HnumReadings = 50;
+int HTempSample[HnumReadings];
+int HreadIndex = 0;
+int Htotal = 0;
+int HTemp;
+
 
 int beeping; //variable to store number of beeps we want
 
-/******************************/
-/******************************/
-/******************************/
+//*******************************************
+//*******************************************
+            /*Object Declarations*/
+//*******************************************
+//*******************************************
 
 
 
@@ -154,7 +184,11 @@ PID PIDRudder(&Heading, &pidoutput, &courseToWaypoint, Kp, Ki, Kd, DIRECT );
 GOFi2cOLED OLED;
 
 
-//***************************************
+//*******************************************
+//*******************************************
+            /*Task Manager Set Up*/
+//*******************************************
+//*******************************************
 
 Scheduler runner;
 // Callback methods prototypes
@@ -186,6 +220,13 @@ void t3Callback() {
   WaypointTEST();
   sensors();
 }
+
+//*******************************************
+//*******************************************
+            /*Setup Loop*/
+//*******************************************
+//*******************************************
+
 
 void setup()
 {
@@ -293,6 +334,13 @@ void setup()
 
 }
 
+//*******************************************
+//*******************************************
+               /*MAIN LOOP*/
+//*******************************************
+//*******************************************
+
+
 void loop()
 {
 
@@ -303,10 +351,20 @@ void loop()
 
   WaterTempSample();
   SalinitySample();
+  AirTempSample();
+  HumiditySample();
   runner.execute();
 
 }
 
+
+
+
+//*******************************************
+//*******************************************
+   /*floating variable mapping function*/
+//*******************************************
+//*******************************************
 
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
 {
