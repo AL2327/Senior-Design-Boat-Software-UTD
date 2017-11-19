@@ -1,7 +1,10 @@
 void sensors() {
 
 
-
+  WaterTempSample();
+  SalinitySample();
+  AirTempSample();
+  HumiditySample();
 
   //WTemp=mapfloat(WTemp, 0,1023, 0,177);
   //WTemp=WTemp+100;

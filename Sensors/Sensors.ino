@@ -10,8 +10,6 @@
 #define Water_Level_Sensor 7
 #define Pump 13
 
-// Definition for voltage sensor input
-#define VoltageSense A1
 
 // Definition for salinity sensor input
 #define salinity 14

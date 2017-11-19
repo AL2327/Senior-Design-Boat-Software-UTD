@@ -102,6 +102,7 @@ int ReplytoPhoneNumber = 0;
 char IncCommand[255];
 String ComRcv;
 boolean ValidMessage;
+boolean SMSCheck;
 
 
 
@@ -203,10 +204,7 @@ Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 
 
 void t1Callback() {
-  Serial.print("IMU Collection:");
-  Serial.println(millis());
-  getIMU();
-  Steering(courseToWaypoint);
+
   Motor(THRT);
 
 }
@@ -332,6 +330,14 @@ void setup()
   runner.startNow();  //set point-in-time for scheduling start.
   Serial.println(millis());
 
+  int smsnum =1;
+  do {
+    FONA('d');      //tell fona to delete any SMS
+    delay(100);
+    Serial2.write(char(smsnum));
+    smsnum++;    
+  } while (SMSCheck != true);
+  
 }
 
 //*******************************************
@@ -348,11 +354,9 @@ void loop()
   getGPS();
   /*End GPS*/
 
+  getIMU();
+  Steering(courseToWaypoint);
 
-  WaterTempSample();
-  SalinitySample();
-  AirTempSample();
-  HumiditySample();
   runner.execute();
 
 }

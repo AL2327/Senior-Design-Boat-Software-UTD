@@ -12,9 +12,9 @@ void Steering(double courseToWaypoint) {
 
   int courseError = (Heading - courseToWaypoint);
 
-  Serial.println("Course Error: "); //
-  Serial.print(courseError);
-  Serial.println("");
+  //Serial.println("Course Error: "); //
+  //Serial.print(courseError);
+ // Serial.println("");
 
   int heading = (int)Heading % 360;           //which way we are going as integer mod 360
   int bearing = (int)courseToWaypoint % 360;  //which way we want to go as integer mod 360
@@ -29,33 +29,19 @@ void Steering(double courseToWaypoint) {
 
   if (dir < 180) {
     if (dir < 30) {
-      Serial.println("DIR: < 180 and < 30 "); //
-      Serial.print(dir);
-      Serial.println("");
       pos = abs((180- ((180 - dir)) / 2));
-
     }
     else {
-      Serial.println("DIR: < 180 and > 30 "); //
-      Serial.print(dir);
-      Serial.println("");
       pos = 145;
-
     }
   }
   else if (dir >= 180) {
     if ((360 - dir) > 30)
     {
-      Serial.println("DIR: >= 180 and (360-dir) > 30 "); //
-      Serial.print(dir);
-      Serial.println("");
       pos  = 35;
     }
     else
     {
-      Serial.println("DIR: >= 180 and (360-dir) < 30 "); //
-      Serial.print(dir);
-      Serial.println("");
       pos = abs(90 - dir / 2);
     }
   }
@@ -66,65 +52,6 @@ void Steering(double courseToWaypoint) {
 
   //pos = constrain(pos, 35, 145);
   Rudder.write(pos);
-
-  Serial.println("RUDDER COMMAND: "); //
-  Serial.println("Commanded Rudder Posistion: 35-145, 90=Straight ");
-  Serial.print(pos);
-  Serial.println("");
-
-
-  /*
-    if(courseError <= -149 && courseError >= -179)
-    {
-          pos = 150;        //make it turn full left
-    }
-
-    else if(courseError >= -148 && courseError <=-100)
-    {
-                pos=pos+30;
-    }
-    else if(courseError >= -99  && courseError <= -30)
-    {
-                pos=pos+15;
-    }
-
-    else if(courseError >=-29 && courseError <=-10)
-    {
-                pos=pos+10;
-    }
-
-    else if(courseError >=9 && courseError <0)
-    {
-                pos=pos+3;
-    }
-
-    //*Other direction
-    if(courseError >= 149 && courseError <= 179)
-    {
-          pos = 150;
-    }
-
-    else if(courseError <= 148 && courseError >=100)
-    {
-          pos=pos-30;
-    }
-    else if(courseError <= 99  && courseError >= 30)
-    {
-          pos=pos-15;
-    }
-
-    else if(courseError <=29 && courseError >=10)
-    {
-          pos=pos-10;
-    }
-
-    else if(courseError <=9 && courseError >0)
-    {
-          pos=pos-3;
-    }
-
-  */
-
 
 
 

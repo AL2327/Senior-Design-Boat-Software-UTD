@@ -5,11 +5,11 @@ void getIMU()
   /**************************************************************************/
 
 
-  /* Calculate pitch and roll from the raw accelerometer data */
+ /* /* Calculate pitch and roll from the raw accelerometer data 
   accel.getEvent(&accel_event);
   if (dof.accelGetOrientation(&accel_event, &orientation))
   {
-    /* 'orientation' should have valid .roll and .pitch fields */
+    /* 'orientation' should have valid .roll and .pitch fields 
     Serial.print(F("Roll: "));
     Serial.print(orientation.roll);
     Serial.print(F("; "));
@@ -19,7 +19,7 @@ void getIMU()
     Serial.println();
   }
 
-
+*/
   /*GET HEADING*/
   mag.getEvent(&mag_event);
   accel.getEvent(&accel_event);
@@ -32,14 +32,15 @@ void getIMU()
 
       Heading = orientation.heading;
       Heading = Heading - 105;
-      Serial.print(F("Heading: "));
-      Serial.print(Heading);
-      Serial.print(F("; "));
-      Serial.println();
+      //Serial.print(F("Heading: "));
+      //Serial.print(Heading);
+      //Serial.print(F("; "));
+      //Serial.println();
     }
   }
   /*End Heading*/
 
+/*
   Serial.println(F(""));
 
   Serial.print("WAYPOINT ");
@@ -60,6 +61,8 @@ void getIMU()
   Serial.print(distanceToWaypoint, 6);
   Serial.print(F(" m."));
   Serial.println(F(""));
+
+  */
 
 }
 

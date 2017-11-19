@@ -351,8 +351,10 @@ void FONA(char command) {
         Serial.print(F("\n\rDeleting SMS #")); Serial.println(smsn);
         if (fona.deleteSMS(smsn)) {
           Serial.println(F("OK!"));
+          SMSCheck=false;
         } else {
           Serial.println(F("Couldn't delete"));
+          SMSCheck=true;
         }
         break;
       }
