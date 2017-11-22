@@ -6,11 +6,6 @@
 
 
 
-//Definitions for bilge pump
-#define Water_Level_Sensor 7
-#define Pump 13
-
-
 // Definition for salinity sensor input
 #define salinity 14
 
@@ -51,12 +46,6 @@ void setup(void)
 {
 
   Serial.begin(9600);
-
-  //initialize pins
-  pinMode(Water_Level_Sensor, INPUT);
-  pinMode(Pump, OUTPUT);
-  //  pinMode(VoltageSense, INPUT);
-
 
 }
 
@@ -152,23 +141,6 @@ void loop(void)
 
   //end salinity
 
-
-  //read float switch state
-  FloatSwitch = digitalRead(Water_Level_Sensor);
-
-  //set pump to on/off according to float switch state
-  if (FloatSwitch == HIGH) {
-    Serial.println( "WATER LEVEL - LOW");
-    digitalWrite(Pump, LOW);
-    digitalWrite(12, LOW);
-  }
-  else {
-    Serial.println( "WATER LEVEL - HIGH");
-    digitalWrite(Pump, HIGH);
-    digitalWrite(12, HIGH);
-  }
-
-  delay(2500);
 }
 
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
