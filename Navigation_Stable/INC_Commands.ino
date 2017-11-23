@@ -8,8 +8,8 @@ void Command() {
     return;
   }
 
-  ComRcv = String(IncCommand[255]);
-  ComRcv.toUpperCase();
+  ComRcv = String(IncCommand[254]);
+  ComRcv = ComRcv.toUpperCase();
 
   if (ComRcv.startsWith("STATUS") ) {
     FONA('s');
@@ -37,41 +37,35 @@ void Command() {
 
   else if (ComRcv.startsWith("DEMO")) {
     FONA('D');
-    delay(1000);
-    beep(3);
+  }
 
-    pos = 90;
-    Rudder.write(pos);  //send rudder to mid position
-    for (pos = 35; pos <= 145; pos += 1) { // goes from 35 degrees to 145 degrees
-      // in steps of 1 degree
-      Rudder.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(10);                       // waits 15ms for the servo to reach the position
-    }
-    for (pos = 145; pos >= 35; pos -= 1) { // goes from 145 degrees to 35 degrees
-      Rudder.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(10);                       // waits 15ms for the servo to reach the position
-    }
-    pos = 90;
-    Rudder.write(pos);  //send rudder to mid position
-    
-    beep(3);
-    /*set throttle to "wiggle"*/
-    for (THRT = 90; THRT <= 100; THRT += 1) {
-      // in steps of 1 degree
-      Throttle.write(THRT);
-      delay(10);
-    }
-    /*set throttle from neutral to full reverse.*/
-    for (pos = 90; THRT >= 80; THRT -= 1) {
-      Throttle.write(THRT);
-      delay(10);
-    }
-    THRT = 90;
-    Throttle.write(THRT);
-    beep(1);
-    FONA('s');
+  /*Changing the Latitude and Longitude with different waypoint #*/
+  else if (ComRcv.startsWith("CHANGE LL")) {
+    FONA('l');
+  }
+
+  /*Changing the craft to follow a heading vs to a waypoint*/
+  else if (ComRcv.startsWith("HEADING MODE ON"))
+  {
+    FONA('H');
+  }
+
+  /*Changing the craft to follow a waypoint vs folling a heading*/
+  else if (ComRcv.startsWith("HEADING MODE OFF"))
+  {
+    FONA('m');
+  }
+
+  /*Requesting a list of waypoints */
+    else if (ComRcv.startsWith("PRINT WP"))
+  {
+    FONA('p');
   }
 
 
+  //delete sms
+  FONA('d');
+  delay(50);
+  FONA('1');
 }
 

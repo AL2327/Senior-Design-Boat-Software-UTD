@@ -1,3 +1,11 @@
+//TO DO LIST
+
+//fix waypoint update
+//add waypoint list print out
+//add throttle logic based on battery condition
+
+
+
 #include <TinyGPS++.h>  //library for GPS
 #include <Wire.h>       //libary for i2c bus
 #include <Adafruit_Sensor.h>  //library for imu
@@ -105,14 +113,18 @@ boolean ValidMessage;
 boolean SMSCheck;
 
 
-
-/*MCU to MCU Easy transfer variables AKA: Sensor Variables*/
 //variables for temperature and salinity sensors
 float temperature ;
 float humidity;
 float dewpoint;
 float steinhart;
 int SalReading;
+
+
+//Variables for inc commands
+boolean HeadingMode=false; 
+int HeadingModeCourse;
+
 
 //Variables for voltage input calculation
 float Vout = 0.0;
@@ -217,6 +229,7 @@ void t2Callback() {
 void t3Callback() {
   WaypointTEST();
   sensors();
+  Command();
 }
 
 //*******************************************
@@ -354,9 +367,17 @@ void loop()
   getGPS();
   /*End GPS*/
 
+  //heading and steering
   getIMU();
   Steering(courseToWaypoint);
 
+  //sensor data gathering
+  WaterTempSample();
+  SalinitySample();
+  AirTempSample();
+  HumiditySample();
+
+  //task handler
   runner.execute();
 
 }

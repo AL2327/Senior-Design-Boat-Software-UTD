@@ -102,167 +102,32 @@ void FONA(char command) {
         break;
       }
 
-    /*** Audio ***/
-    case 'v': {
-        // set volume
-        flushSerial();
-        if ( (type == FONA3G_A) || (type == FONA3G_E) ) {
-          Serial.print(F("Set Vol [0-8] "));
-        } else {
-          Serial.print(F("Set Vol % [0-100] "));
-        }
-        uint8_t vol = readnumber();
-        Serial.println();
-        if (! fona.setVolume(vol)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        break;
-      }
 
-    case 'V': {
-        uint8_t v = fona.getVolume();
-        Serial.print(v);
-        if ( (type == FONA3G_A) || (type == FONA3G_E) ) {
-          Serial.println(" / 8");
-        } else {
-          Serial.println("%");
-        }
-        break;
-      }
+
 
     case 'H': {
-        // Set Headphone output
-        if (! fona.setAudio(FONA_HEADSETAUDIO)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        fona.setMicVolume(FONA_HEADSETAUDIO, 15);
-        break;
-      }
-    case 'e': {
-        // Set External output
-        if (! fona.setAudio(FONA_EXTAUDIO)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
+
+        //HEADING MODE ON
+        HeadingMode = true;
+
+        String temp = ComRcv.remove(0, 16); //this should trim off "HEADING_MODE_ON_" leaving us with just the heading value
+
+        long newcourseToWaypoint = temp.toInt();
+        HeadingModeCourse = int(newcourseToWaypoint);
+
+        String msg1 = String(newcourseToWaypoint);
+        String msg = "Overriding Waypoint Navigation to hold heading: " + msg1 ;
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
         }
 
-        fona.setMicVolume(FONA_EXTAUDIO, 10);
-        break;
-      }
-
-    case 'T': {
-        // play tone
         flushSerial();
-        Serial.print(F("Play tone #"));
-        uint8_t kittone = readnumber();
-        Serial.println();
-        // play for 1 second (1000 ms)
-        if (! fona.playToolkitTone(kittone, 1000)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        break;
-      }
-
-    /*** FM Radio ***/
-
-    case 'f': {
-        // get freq
-        flushSerial();
-        Serial.print(F("FM Freq (eg 1011 == 101.1 MHz): "));
-        uint16_t station = readnumber();
-        Serial.println();
-        // FM radio ON using headset
-        if (fona.FMradio(true, FONA_HEADSETAUDIO)) {
-          Serial.println(F("Opened"));
-        }
-        if (! fona.tuneFMradio(station)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("Tuned"));
-        }
-        break;
-      }
-    case 'F': {
-        // FM radio off
-        if (! fona.FMradio(false)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        break;
-      }
-    case 'm': {
-        // Set FM volume.
-        flushSerial();
-        Serial.print(F("Set FM Vol [0-6]:"));
-        uint8_t vol = readnumber();
-        Serial.println();
-        if (!fona.setFMVolume(vol)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        break;
-      }
-    case 'M': {
-        // Get FM volume.
-        uint8_t fmvol = fona.getFMVolume();
-        if (fmvol < 0) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.print(F("FM volume: "));
-          Serial.println(fmvol, DEC);
-        }
-        break;
-      }
-    case 'q': {
-        // Get FM station signal level (in decibels).
-        flushSerial();
-        Serial.print(F("FM Freq (eg 1011 == 101.1 MHz): "));
-        uint16_t station = readnumber();
-        Serial.println();
-        int8_t level = fona.getFMSignalLevel(station);
-        if (level < 0) {
-          Serial.println(F("Failed! Make sure FM radio is on (tuned to station)."));
-        } else {
-          Serial.print(F("Signal level (dB): "));
-          Serial.println(level, DEC);
-        }
-        break;
-      }
-
-    /*** PWM ***/
-
-    case 'P': {
-        // PWM Buzzer output @ 2KHz max
-        flushSerial();
-        Serial.print(F("PWM Freq, 0 = Off, (1-2000): "));
-        uint16_t freq = readnumber();
-        Serial.println();
-        if (! fona.setPWM(freq)) {
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("OK!"));
-        }
-        break;
-      }
-
-    /*** Call ***/
-    case 'c': {
-        // call a phone!
-        char number[30];
-        flushSerial();
-        Serial.print(F("Call #"));
-        readline(number, 30);
-        Serial.println();
-        Serial.print(F("Calling ")); Serial.println(number);
-        if (!fona.callPhone(number)) {
+        if (! fona.sendSMS(sendto, message)) {
           Serial.println(F("Failed"));
         } else {
           Serial.println(F("Sent!"));
@@ -270,26 +135,29 @@ void FONA(char command) {
 
         break;
       }
-    case 'A': {
-        // get call status
-        int8_t callstat = fona.getCallStatus();
-        switch (callstat) {
-          case 0: Serial.println(F("Ready")); break;
-          case 1: Serial.println(F("Could not get status")); break;
-          case 3: Serial.println(F("Ringing (incoming)")); break;
-          case 4: Serial.println(F("Ringing/in progress (outgoing)")); break;
-          default: Serial.println(F("Unknown")); break;
+
+
+    case 'm': {
+        // Set Heading mode OFF
+
+        HeadingMode = false;
+
+        String msg1 = String(WPCount);
+        String msg = "Navigation Mode Enabled, proceeding to Waypoint :" + msg1 ;
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
         }
-        break;
-      }
 
-
-    case 'p': {
-        // pick up!
-        if (! fona.pickUp()) {
+        flushSerial();
+        if (! fona.sendSMS(sendto, message)) {
           Serial.println(F("Failed"));
         } else {
-          Serial.println(F("OK!"));
+          Serial.println(F("Sent!"));
         }
         break;
       }
@@ -307,6 +175,7 @@ void FONA(char command) {
         }
         break;
       }
+
     case 'r': {
         // read an SMS
         flushSerial();
@@ -336,7 +205,7 @@ void FONA(char command) {
         Serial.println(replybuffer);
         Serial.println(F("*****"));
 
-        IncCommand[255] = replybuffer[255];           //this is our received command
+        IncCommand[254] = replybuffer[254];           //this is our received command
         ValidMessage = true;
 
         break;
@@ -351,10 +220,10 @@ void FONA(char command) {
         Serial.print(F("\n\rDeleting SMS #")); Serial.println(smsn);
         if (fona.deleteSMS(smsn)) {
           Serial.println(F("OK!"));
-          SMSCheck=false;
+          SMSCheck = false;
         } else {
           Serial.println(F("Couldn't delete"));
-          SMSCheck=true;
+          SMSCheck = true;
         }
         break;
       }
@@ -362,17 +231,18 @@ void FONA(char command) {
     case 's': {
         // send an SMS!
 
+
         String msg1 = String(Heading);
         String msg2 = String(courseToWaypoint, 6);
         String msg3 = String(distanceToWaypoint / 1000, 6);
         String msg4 = String(WaypointLAT[WPCount], 6);
         String msg5 = String(WaypointLONG[WPCount], 6);
         String msg6 = String(WPCount, 3);
-        String msg7 = String(temperature, 5);
-        String msg8 = String(humidity, 2);
+        String msg7 = String(ATemp, 5);
+        String msg8 = String(HTemp, 2);
         String msg9 = String(dewpoint, 4);
         String msg10 = String(steinhart, 6);
-        String msg11 = String(SalReading, 6);
+        String msg11 = String(STemp, 6);
         String msg12 = String(Vin);
         String msg13 = String(BatterySOC);
         String msg14 = String(FloatSwitch);
@@ -408,7 +278,7 @@ void FONA(char command) {
     case 'w': {
         // send an SMS reply to acknowledge waypoint update!
 
-        String msg1 = String(WPCount,3);
+        String msg1 = String(WPCount, 3);
         String msg = "WP# Changed to : " + msg1 + ".";
 
         char sendto[21], message[300];
@@ -454,7 +324,7 @@ void FONA(char command) {
         }
 
         break;
-      }      
+      }
 
 
     case 'R': {
@@ -480,11 +350,11 @@ void FONA(char command) {
         }
 
         break;
-      }  
+      }
 
 
     case 'D': {
-        // send an SMS reply to acknowledge halt command!
+        // send an SMS reply to acknowledge demo command!
 
         String msg = "DEMO MODE.";
 
@@ -505,138 +375,108 @@ void FONA(char command) {
           Serial.println(F("Sent!"));
         }
 
-        break;
-      }        
 
-    case 'u': {
-        // send a USSD!
-        char message[141];
-        flushSerial();
-        Serial.print(F("Type out one-line message (140 char): "));
-        readline(message, 140);
-        Serial.println(message);
+        delay(1000);
+        beep(3);
 
-        uint16_t ussdlen;
-        if (!fona.sendUSSD(message, replybuffer, 250, &ussdlen)) { // pass in buffer and max len!
-          Serial.println(F("Failed"));
-        } else {
-          Serial.println(F("Sent!"));
-          Serial.print(F("***** USSD Reply"));
-          Serial.print(" ("); Serial.print(ussdlen); Serial.println(F(") bytes *****"));
-          Serial.println(replybuffer);
-          Serial.println(F("*****"));
+        pos = 90;
+        Rudder.write(pos);  //send rudder to mid position
+        for (pos = 35; pos <= 145; pos += 1) { // goes from 35 degrees to 145 degrees
+          // in steps of 1 degree
+          Rudder.write(pos);              // tell servo to go to position in variable 'pos'
+          delay(10);                       // waits 15ms for the servo to reach the position
         }
-      }
-
-    /*** Time ***/
-
-    case 'y': {
-        // enable network time sync
-        if (!fona.enableNetworkTimeSync(true))
-          Serial.println(F("Failed to enable"));
-        break;
-      }
-
-    case 'Y': {
-        // enable NTP time sync
-        if (!fona.enableNTPTimeSync(true, F("pool.ntp.org")))
-          Serial.println(F("Failed to enable"));
-        break;
-      }
-
-    case 't': {
-        // read the time
-        char buffer[23];
-
-        fona.getTime(buffer, 23);  // make sure replybuffer is at least 23 bytes!
-        Serial.print(F("Time = ")); Serial.println(buffer);
-        break;
-      }
-
-
-    /*********************************** GPS (SIM808 only) */
-
-    case 'o': {
-        // turn GPS off
-        if (!fona.enableGPS(false))
-          Serial.println(F("Failed to turn off"));
-        break;
-      }
-    case 'O': {
-        // turn GPS on
-        if (!fona.enableGPS(true))
-          Serial.println(F("Failed to turn on"));
-        break;
-      }
-    case 'x': {
-        int8_t stat;
-        // check GPS fix
-        stat = fona.GPSstatus();
-        if (stat < 0)
-          Serial.println(F("Failed to query"));
-        if (stat == 0) Serial.println(F("GPS off"));
-        if (stat == 1) Serial.println(F("No fix"));
-        if (stat == 2) Serial.println(F("2D fix"));
-        if (stat == 3) Serial.println(F("3D fix"));
-        break;
-      }
-
-    case 'L': {
-        // check for GPS location
-        char gpsdata[120];
-        fona.getGPS(0, gpsdata, 120);
-        if (type == FONA808_V1)
-          Serial.println(F("Reply in format: mode,longitude,latitude,altitude,utctime(yyyymmddHHMMSS),ttff,satellites,speed,course"));
-        else
-          Serial.println(F("Reply in format: mode,fixstatus,utctime(yyyymmddHHMMSS),latitude,longitude,altitude,speed,course,fixmode,reserved1,HDOP,PDOP,VDOP,reserved2,view_satellites,used_satellites,reserved3,C/N0max,HPA,VPA"));
-        Serial.println(gpsdata);
-
-        break;
-      }
-
-    case 'E': {
-        flushSerial();
-        if (type == FONA808_V1) {
-          Serial.print(F("GPS NMEA output sentences (0 = off, 34 = RMC+GGA, 255 = all)"));
-        } else {
-          Serial.print(F("On (1) or Off (0)? "));
+        for (pos = 145; pos >= 35; pos -= 1) { // goes from 145 degrees to 35 degrees
+          Rudder.write(pos);              // tell servo to go to position in variable 'pos'
+          delay(10);                       // waits 15ms for the servo to reach the position
         }
-        uint8_t nmeaout = readnumber();
+        pos = 90;
+        Rudder.write(pos);  //send rudder to mid position
 
-        // turn on NMEA output
-        fona.enableGPSNMEA(nmeaout);
-
+        beep(3);
+        /*set throttle to "wiggle"*/
+        for (THRT = 90; THRT <= 100; THRT += 1) {
+          // in steps of 1 degree
+          Throttle.write(THRT);
+          delay(10);
+        }
+        /*set throttle from neutral to full reverse.*/
+        for (pos = 90; THRT >= 80; THRT -= 1) {
+          Throttle.write(THRT);
+          delay(10);
+        }
+        THRT = 90;
+        Throttle.write(THRT);
+        beep(1);
+        FONA('s');
         break;
       }
 
-    /*********************************** GPRS */
 
-    case 'g': {
-        // turn GPRS off
-        if (!fona.enableGPRS(false))
-          Serial.println(F("Failed to turn off"));
-        break;
-      }
-    case 'G': {
-        // turn GPRS on
-        if (!fona.enableGPRS(true))
-          Serial.println(F("Failed to turn on"));
-        break;
-      }
-    case 'l': {
-        // check for GSMLOC (requires GPRS)
-        uint16_t returncode;
 
-        if (!fona.getGSMLoc(&returncode, replybuffer, 250))
-          Serial.println(F("Failed!"));
-        if (returncode == 0) {
-          Serial.println(replybuffer);
-        } else {
-          Serial.print(F("Fail code #")); Serial.println(returncode);
+
+
+    /*
+        /*send an SMS reply to Latitude and Logitude change command!
+        case 'l': {
+
+            //Message template Change ll 5 -96.75182,-96.75182
+
+            //String msg1 = String(Waypoint, 5);
+            String msg1 = String(Waypoint(5));
+            String msg2 = String(WaypointLAT[5]);
+            String msg3 = String(WaypointLONG[5]);
+
+            String msg = "Latitude and Longitude Changed of waypoint number " + msg1 + " to : " + " " + msg2 + " , " + msg3 ;
+
+            char sendto[21], message[300];
+            ltoa(ReplytoPhoneNumber, sendto, 10) ;
+            for (int i = 0; i < msg.length() ; i++)
+            {
+              msg.toCharArray(message, 300);
+
+            }
+
+            //Serial.println("!!!!!!!MESSAGE IS!!!!!!");
+            //Serial.println(message);
+            flushSerial();
+            if (! fona.sendSMS(sendto, message)) {
+              Serial.println(F("Failed"));
+            } else {
+              Serial.println(F("Sent!"));
+            }
+
+            break;
+          }*/
+
+
+
+    case 'p': {
+        // send an SMS list of waypoints  ***********I still gotta do this one**********
+
+
+        for (int i = 0; i = 9; i++) {
+          String msgWPC[i] = String(WPCount, 3);
+          String msgLAT[i] = String(WaypointLAT[WPCount], 6);
+          String msgLONG[i] = (WaypointLONG[WPCount], 6);
         }
 
+        String msg = "WP#: " + msgWPC[0] + " \n " + "LAT: " + msgLAT[0] + " \n " + "LONG: " + msgLONG[0] + "\n " + "\n " + "WP#: " + msgWPC[1] + " \n " + "LAT: " + msgLAT[1] + " \n " + "LONG: " + msgLONG[1] + "\n " + "\n " + 
+          "WP#: " + msgWPC[2] + " \n " + "LAT: " + msgLAT[2] + " \n " + "LONG: " + msgLONG[3] + "\n " + "\n " + "WP#: " + msgWPC[4] + " \n " + "LAT: " + msgLAT[4] + " \n " + "LONG: " + msgLONG[4] + "\n " + "\n " + 
+          "WP#: " + msgWPC[5] + " \n " + "LAT: " + msgLAT[5] + " \n " + "LONG: " + msgLONG[5] + "\n " + "\n " + "WP#: " + msgWPC[6] + " \n " + "LAT: " + msgLAT[6] + " \n " + "LONG: " + msgLONG[6] + "\n " + "\n " + 
+          "WP#: " + msgWPC[7] + " \n " + "LAT: " + msgLAT[7] + " \n " + "LONG: " + msgLONG[7] + "\n " + "\n " + "WP#: " + msgWPC[8] + " \n " + "LAT: " + msgLAT[8] + " \n " + "LONG: " + msgLONG[8] + "\n " + "\n " + 
+          "WP#: " + msgWPC[9] + " \n " + "LAT: " + msgLAT[9] + " \n " + "LONG: " + msgLONG[9];
+
+        char sendto[21], message[300];
+        ltoa(ReplytoPhoneNumber, sendto, 10) ;
+        for (int i = 0; i < msg.length() ; i++)
+        {
+          msg.toCharArray(message, 300);
+
+        }
         break;
       }
+
 
     case 'W': {
         // Post data to website

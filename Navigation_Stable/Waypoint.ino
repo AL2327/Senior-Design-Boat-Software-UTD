@@ -29,5 +29,8 @@ void Waypoint(int WPCount) {
 
   WaypointLAT[8] = 0;
   WaypointLONG[8] = 0;
+
+  WaypointLAT[9] = 0;
+  WaypointLONG[9] = 0;  
 }
 
