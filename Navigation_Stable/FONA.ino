@@ -245,10 +245,10 @@ void FONA(char command) {
         String msg11 = String(STemp, 6);
         String msg12 = String(Vin);
         String msg13 = String(BatterySOC);
-        String msg14 = String(FloatSwitch);
+
 
         String msg = "WP#: " + msg6 + " \n " + "H: " + msg1 + " \n " + "C2WP: " + msg2 + "\n " + "D2WP: " + msg3 + " \n " + "Lat: " + msg4 + "\n " + "Long: " + msg5 + "\n " + "AT: " + msg7 + "\n " + "AH: "
-                     + msg8 + " \n " + "DP: " + msg9 + " \n " + "WT: " + msg10 + " \n " + "SAL: " + msg11 + " \n " + "V: " + msg12 + " \n " + "SoC: " + msg13 + " \n " + "B: " + msg14;
+                     + msg8 + " \n " + "DP: " + msg9 + " \n " + "WT: " + msg10 + " \n " + "SAL: " + msg11 + " \n " + "V: " + msg12 + " \n " + "SoC: " + msg13;
 
         char sendto[21] = "4698883192", message[300] ;
         for (int i = 0; i < msg.length() ; i++)
@@ -454,19 +454,40 @@ void FONA(char command) {
     case 'p': {
         // send an SMS list of waypoints  ***********I still gotta do this one**********
 
+      /*  String msg1 = String(WaypointLAT[0], 6);
+        String msg2 = String(WaypointLONG[0], 6);
+        String msg3 = String(WaypointLAT[1], 6);
+        String msg4 = String(WaypointLONG[1], 6);
+        String msg5 = String(WaypointLAT[2], 6);
+        String msg6 = String(WaypointLONG[2], 6);
+        String msg7 = String(WaypointLAT[3], 6);
+        String msg8 = String(WaypointLONG[3], 6);
+        String msg9 = String(WaypointLAT[4], 6);
+        String msg10 = String(WaypointLONG[4], 6);
+        String msg11 = String(WaypointLAT[5], 6);
+        String msg12 = String(WaypointLONG[5], 6);
+        String msg13 = String(WaypointLAT[6], 6);
+        String msg14 = String(WaypointLONG[6], 6);        
+        String msg15 = String(WaypointLAT[7], 6);
+        String msg16 = String(WaypointLONG[7], 6);        
+        String msg17 = String(WaypointLAT[8], 6);
+        String msg18 = String(WaypointLONG[8], 6);
+        String msg19 = String(WaypointLAT[9], 6);
+        String msg20 = String(WaypointLONG[9], 6);        
+                
+        String msg = "WP#: 0" + " \n " + "LAT: " + msg1 + " \n " + "LONG: " + msg2, 7 + "\n " + "\n " +
+                     "WP#: 1" + " \n " + "LAT: " + msg3 + " \n " + "LONG: " + msg4, 7 + "\n " + "\n " +
+                     "WP#: 2" + " \n " + "LAT: " + msg5 + " \n " + "LONG: " + msg6, 7 + "\n " + "\n " +                     
+                     "WP#: 3" + " \n " + "LAT: " + msg7 + " \n " + "LONG: " + msg8, 7 + "\n " + "\n " +
+                     "WP#: 4" + " \n " + "LAT: " + msg9 + " \n " + "LONG: " + msg10, 7 + "\n " + "\n " +                                          
+                     "WP#: 5" + " \n " + "LAT: " + msg11 + " \n " + "LONG: " + msg12, 7 + "\n " + "\n " +
+                     "WP#: 6" + " \n " + "LAT: " + msg13 + " \n " + "LONG: " + msg14, 7 + "\n " + "\n " +
+                     "WP#: 7" + " \n " + "LAT: " + msg15 + " \n " + "LONG: " + msg16, 7 + "\n " + "\n " +
+                     "WP#: 8" + " \n " + "LAT: " + msg17 + " \n " + "LONG: " + msg18, 7 + "\n " + "\n " +
+                     "WP#: 9" + " \n " + "LAT: " + msg19 + " \n " + "LONG: " + msg20, 7 + "\n " + "\n ";
 
-        for (int i = 0; i = 9; i++) {
-          String msgWPC[i] = String(WPCount, 3);
-          String msgLAT[i] = String(WaypointLAT[WPCount], 6);
-          String msgLONG[i] = (WaypointLONG[WPCount], 6);
-        }
 
-        String msg = "WP#: " + msgWPC[0] + " \n " + "LAT: " + msgLAT[0] + " \n " + "LONG: " + msgLONG[0] + "\n " + "\n " + "WP#: " + msgWPC[1] + " \n " + "LAT: " + msgLAT[1] + " \n " + "LONG: " + msgLONG[1] + "\n " + "\n " + 
-          "WP#: " + msgWPC[2] + " \n " + "LAT: " + msgLAT[2] + " \n " + "LONG: " + msgLONG[3] + "\n " + "\n " + "WP#: " + msgWPC[4] + " \n " + "LAT: " + msgLAT[4] + " \n " + "LONG: " + msgLONG[4] + "\n " + "\n " + 
-          "WP#: " + msgWPC[5] + " \n " + "LAT: " + msgLAT[5] + " \n " + "LONG: " + msgLONG[5] + "\n " + "\n " + "WP#: " + msgWPC[6] + " \n " + "LAT: " + msgLAT[6] + " \n " + "LONG: " + msgLONG[6] + "\n " + "\n " + 
-          "WP#: " + msgWPC[7] + " \n " + "LAT: " + msgLAT[7] + " \n " + "LONG: " + msgLONG[7] + "\n " + "\n " + "WP#: " + msgWPC[8] + " \n " + "LAT: " + msgLAT[8] + " \n " + "LONG: " + msgLONG[8] + "\n " + "\n " + 
-          "WP#: " + msgWPC[9] + " \n " + "LAT: " + msgLAT[9] + " \n " + "LONG: " + msgLONG[9];
-
+        
         char sendto[21], message[300];
         ltoa(ReplytoPhoneNumber, sendto, 10) ;
         for (int i = 0; i < msg.length() ; i++)
@@ -475,6 +496,7 @@ void FONA(char command) {
 
         }
         break;
+        */
       }
 
 

@@ -86,8 +86,8 @@ void sensors() {
   }
 
 
-  //Read Voltage input
-  Vread = analogRead(VoltageSense);
+  //Read Voltage input (our sampled/avg value from Voltage_AVG)
+  Vread = VTemp;
 
   //Do some ENA Math and output voltage.
   Vout = (Vread * 3.3) / 1024;
@@ -110,7 +110,7 @@ void sensors() {
   else if (Vin <= 11.95 && Vin > 11.66) {
     BatterySOC = 3; // our battery is low.  It is between 20-40% charged
   }
-  else if (Vin <= 1165) {
+  else if (Vin <= 11.65) {
     BatterySOC = 4; // our battery is under 20% charged. This is critically low.
   }
 

@@ -2,9 +2,6 @@
 
 //fix waypoint update
 //add waypoint list print out
-//add throttle logic based on battery condition
-
-
 
 #include <TinyGPS++.h>  //library for GPS
 #include <Wire.h>       //libary for i2c bus
@@ -67,7 +64,7 @@ sensors_vec_t   orientation;
 
 //*******************************************
 //*******************************************
-      /*LET US DEFINE SOME VARIABLES*/
+/*LET US DEFINE SOME VARIABLES*/
 //*******************************************
 //*******************************************
 
@@ -122,7 +119,7 @@ int SalReading;
 
 
 //Variables for inc commands
-boolean HeadingMode=false; 
+boolean HeadingMode = false;
 int HeadingModeCourse;
 
 
@@ -147,7 +144,6 @@ int WreadIndex = 0;
 int Wtotal = 0;
 int WTemp;
 
-
 //water temmperature input averaging variables
 const int SnumReadings = 50;
 int STempSample[SnumReadings];
@@ -169,12 +165,19 @@ int HreadIndex = 0;
 int Htotal = 0;
 int HTemp;
 
+//Voltage measurement input averaging variables
+const int VnumReadings = 50;
+int VTempSample[VnumReadings];
+int VreadIndex = 0;
+int Vtotal = 0;
+int VTemp;
+
 
 int beeping; //variable to store number of beeps we want
 
 //*******************************************
 //*******************************************
-            /*Object Declarations*/
+/*Object Declarations*/
 //*******************************************
 //*******************************************
 
@@ -199,7 +202,7 @@ GOFi2cOLED OLED;
 
 //*******************************************
 //*******************************************
-            /*Task Manager Set Up*/
+/*Task Manager Set Up*/
 //*******************************************
 //*******************************************
 
@@ -210,31 +213,32 @@ void t2Callback();
 void t3Callback();
 
 // Tasks
-Task t1(500, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
-Task t2(60000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task do fona
+Task t1(10000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
+Task t2(60000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task do fona status message once every minute.
 Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 
-
+/*Every 10 seconds, lets check our throttle setting vs battery condition 
+ * and also check for any incoming commands.
+ */
 void t1Callback() {
-
   Motor(THRT);
-
-}
-
-void t2Callback() {
-  //FONA('s');
-
-}
-
-void t3Callback() {
-  WaypointTEST();
-  sensors();
   Command();
 }
 
+/*Every 60 seconds, lets send a status message and also check our sensor data. */
+void t2Callback() {
+  sensors();
+  //FONA('s');  
+}
+
+/*Every 5 seconds, lets check our distance to waypoint and see if we have made it yet.*/
+void t3Callback() {
+  WaypointTEST();
+}
+
 //*******************************************
 //*******************************************
-            /*Setup Loop*/
+/*Setup Loop*/
 //*******************************************
 //*******************************************
 
@@ -332,10 +336,8 @@ void setup()
   GPSStart();
 
   /*Let's get moving!*/
-  THRT = 180;
-  Throttle.write(THRT); //send command to set throttle
-  Serial.println("Throttle Set to FULL!");
-
+  beep(3);  //3 beeps to register warning
+  Serial.println("KEEP CLEAR! THROTTLE UNDER MCU CONTROL!");
   beep(3);  //3 beeps to register warning
 
   /* Initialize Scheduler */
@@ -343,19 +345,19 @@ void setup()
   runner.startNow();  //set point-in-time for scheduling start.
   Serial.println(millis());
 
-  int smsnum =1;
+  int smsnum = 1;
   do {
     FONA('d');      //tell fona to delete any SMS
     delay(100);
     Serial2.write(char(smsnum));
-    smsnum++;    
+    smsnum++;
   } while (SMSCheck != true);
-  
+
 }
 
 //*******************************************
 //*******************************************
-               /*MAIN LOOP*/
+/*MAIN LOOP*/
 //*******************************************
 //*******************************************
 
@@ -376,7 +378,8 @@ void loop()
   SalinitySample();
   AirTempSample();
   HumiditySample();
-
+  VoltageSample();
+  
   //task handler
   runner.execute();
 
@@ -387,7 +390,7 @@ void loop()
 
 //*******************************************
 //*******************************************
-   /*floating variable mapping function*/
+/*floating variable mapping function*/
 //*******************************************
 //*******************************************
 
