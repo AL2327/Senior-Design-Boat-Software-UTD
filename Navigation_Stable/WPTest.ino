@@ -8,7 +8,7 @@ void WaypointTEST() {
     Serial.print(WPCount);
   }
 
-  if (distanceToWaypoint <= 10 and distanceToWaypoint>=1) {
+  if (distanceToWaypoint <= 7 and distanceToWaypoint>=1) {
     WPCount++;
     Serial.println("WAYPOINT REACHED! COUNTER INCREMENTED TO: ");
     Serial.println(WPCount);

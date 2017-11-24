@@ -78,12 +78,12 @@ void sensors() {
 
   
 
-  if (FloatSwitch == HIGH) {
-    Serial.println( "WATER LEVEL - LOW");
-  }
-  else {
-    Serial.println( "WATER LEVEL - HIGH");
-  }
+//  if (FloatSwitch == HIGH) {
+//    Serial.println( "WATER LEVEL - LOW");
+//  }
+//  else {
+//    Serial.println( "WATER LEVEL - HIGH");
+//  }
 
 
   //Read Voltage input (our sampled/avg value from Voltage_AVG)

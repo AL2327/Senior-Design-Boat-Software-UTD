@@ -1,16 +1,16 @@
 void getGPS()
 {
 
-/**************************************************************************/
-/* GPS SECTION */
-/**************************************************************************/
+  /**************************************************************************/
+  /* GPS SECTION */
+  /**************************************************************************/
 
-    
+
   // Dispatch incoming characters
   while (ss.available() > 0)
     gps.encode(ss.read());
 
- if (gps.location.isUpdated())
+  if (gps.location.isUpdated())
   {
     Serial.print(F("LOCATION   Fix Age="));
     Serial.print(gps.location.age());
@@ -61,7 +61,7 @@ void getGPS()
   }
 
 
-    else if (gps.speed.isUpdated())
+  else if (gps.speed.isUpdated())
   {
     Serial.print(F("SPEED      Fix Age="));
     Serial.print(gps.speed.age());
@@ -109,39 +109,36 @@ void getGPS()
     Serial.print(gps.satellites.age());
     Serial.print(F("ms Value="));
     Serial.println(gps.satellites.value());
-    SatFix=int(gps.satellites.value());
+    SatFix = int(gps.satellites.value());
   }
 
-   else if (gps.hdop.isUpdated())
+  else if (gps.hdop.isUpdated())
   {
     Serial.print(F("HDOP       Fix Age="));
     Serial.print(gps.hdop.age());
     Serial.print(F("ms Value="));
     Serial.println(gps.hdop.value());
   }
-  
-else if (millis() - last > 1000)
+
+  else if (millis() - last > 1000)
   {
     Serial.println();
     if (gps.location.isValid())
     {
-      if (HeadingMode=false){
-           
-
       distanceToWaypoint =
         TinyGPSPlus::distanceBetween(
           gps.location.lat(),
           gps.location.lng(),
-          WaypointLAT[WPCount], 
+          WaypointLAT[WPCount],
           WaypointLONG[WPCount]);
       courseToWaypoint =
         TinyGPSPlus::courseTo(
           gps.location.lat(),
           gps.location.lng(),
-          WaypointLAT[WPCount], 
+          WaypointLAT[WPCount],
           WaypointLONG[WPCount]);
 
-      Serial.print(F("Heading Mode OFF"));
+      Serial.println(F("Heading Mode OFF"));
       Serial.print(F("Waypoint Distance="));
       Serial.print(distanceToWaypoint / 1000, 6);
       Serial.print(F(" km Course-to="));
@@ -149,14 +146,15 @@ else if (millis() - last > 1000)
       Serial.print(F(" degrees ["));
       Serial.print(TinyGPSPlus::cardinal(courseToWaypoint));
       Serial.println(F("]"));
-      }
-      else if (HeadingMode=true){
-        courseToWaypoint = HeadingModeCourse;
-        distanceToWaypoint = 9999;
-        Serial.print(F("HEADING MODE ON: Course ="));
-        Serial.print(courseToWaypoint, 6);
-        Serial.print(F(" degrees ["));
-      }
+
+      /*  if (HeadingMode=(true)){
+          courseToWaypoint = HeadingModeCourse;
+          distanceToWaypoint = 9999;
+          Serial.print(F("HEADING MODE ON: Course ="));
+          Serial.print(courseToWaypoint, 6);
+          Serial.print(F(" degrees ["));
+        }
+      */
     }
 
     Serial.print(F("DIAGS      Chars="));

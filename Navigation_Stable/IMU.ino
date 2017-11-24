@@ -32,15 +32,15 @@ void getIMU()
 
       Heading = orientation.heading;
       Heading = Heading - 105;
-      //Serial.print(F("Heading: "));
-      //Serial.print(Heading);
-      //Serial.print(F("; "));
-      //Serial.println();
+      Serial.print(F("Heading: "));
+      Serial.print(Heading);
+      Serial.print(F("; "));
+      Serial.println();
     }
   }
   /*End Heading*/
 
-/*
+
   Serial.println(F(""));
 
   Serial.print("WAYPOINT ");
@@ -62,7 +62,7 @@ void getIMU()
   Serial.print(F(" m."));
   Serial.println(F(""));
 
-  */
+
 
 }
 

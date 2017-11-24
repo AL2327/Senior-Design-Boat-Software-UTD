@@ -213,27 +213,32 @@ void t2Callback();
 void t3Callback();
 
 // Tasks
-Task t1(10000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
+Task t1(1000, TASK_FOREVER, &t1Callback, &runner, true);  //adding task to do periodic tasks
 Task t2(60000, TASK_FOREVER, &t2Callback, &runner, true);  //adding task do fona status message once every minute.
 Task t3(5000, TASK_FOREVER, &t3Callback, &runner, true);
 
-/*Every 10 seconds, lets check our throttle setting vs battery condition 
- * and also check for any incoming commands.
- */
+/*Every 10 seconds, lets check our throttle setting vs battery condition
+   and also check for any incoming commands.
+*/
 void t1Callback() {
-  Motor(THRT);
-  Command();
+  //heading and steering
+  getIMU();
+  Steering(courseToWaypoint);
+
+  //  Command();
 }
 
 /*Every 60 seconds, lets send a status message and also check our sensor data. */
 void t2Callback() {
-  sensors();
-  //FONA('s');  
+  Motor(THRT);
+  //FONA('s');
 }
 
 /*Every 5 seconds, lets check our distance to waypoint and see if we have made it yet.*/
 void t3Callback() {
+
   WaypointTEST();
+  sensors();
 }
 
 //*******************************************
@@ -276,6 +281,7 @@ void setup()
   /* Initialise Waypoint Array */
   Serial.println("WAYPOINT Setup");
   delay(100);
+  WPCount = 1;
   Waypoint(WPCount);
   Serial.print("WAYPOINT ");
   Serial.print(WPCount);
@@ -345,13 +351,13 @@ void setup()
   runner.startNow();  //set point-in-time for scheduling start.
   Serial.println(millis());
 
-  int smsnum = 1;
-  do {
-    FONA('d');      //tell fona to delete any SMS
-    delay(100);
-    Serial2.write(char(smsnum));
-    smsnum++;
-  } while (SMSCheck != true);
+  //  int smsnum = 1;
+  //  do {
+  //    FONA('d');      //tell fona to delete any SMS
+  //    delay(100);
+  //    Serial2.write(char(smsnum));
+  //    smsnum++;
+  //  } while (SMSCheck != true);
 
 }
 
@@ -369,9 +375,7 @@ void loop()
   getGPS();
   /*End GPS*/
 
-  //heading and steering
-  getIMU();
-  Steering(courseToWaypoint);
+
 
   //sensor data gathering
   WaterTempSample();
@@ -379,7 +383,7 @@ void loop()
   AirTempSample();
   HumiditySample();
   VoltageSample();
-  
+
   //task handler
   runner.execute();
 
