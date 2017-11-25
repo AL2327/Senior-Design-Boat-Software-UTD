@@ -2,7 +2,7 @@ void Command() {
 
   FONA('r');            //tell fona to check for new message
   delay(50);            //pause 50 milli seconds for it to receive
-  FONA('1');            //tell fona to check messaage 1
+  //Serial2.write(1);     //tell fona to check messaage 1
 
   if (ValidMessage = false) {
     return;                         //if no message was received, leave function and continue operation

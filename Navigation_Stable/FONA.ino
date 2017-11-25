@@ -180,11 +180,13 @@ void FONA(char command) {
         // read an SMS
         flushSerial();
         Serial.print(F("Read #"));
-        uint8_t smsn = readnumber();
-        Serial.print(F("\n\rReading SMS #")); Serial.println(smsn);
+        //uint8_t smsn = readnumber();
+        int smsnum = 1;
+        Serial2.write(smsnum);     //tell fona to check messaage 1
+        Serial.print(F("\n\rReading SMS #")); Serial.println(smsnum);
 
         // Retrieve SMS sender address/phone number.
-        if (! fona.getSMSSender(smsn, replybuffer, 250)) {
+        if (! fona.getSMSSender(smsnum, replybuffer, 250)) {
           Serial.println("Failed!");
           ValidMessage = false;
           break;
@@ -195,12 +197,12 @@ void FONA(char command) {
 
         // Retrieve SMS value.
         uint16_t smslen;
-        if (! fona.readSMS(smsn, replybuffer, 250, &smslen)) { // pass in buffer and max len!
+        if (! fona.readSMS(smsnum, replybuffer, 250, &smslen)) { // pass in buffer and max len!
           Serial.println("Failed!");
           ValidMessage = false;
           break;
         }
-        Serial.print(F("***** SMS #")); Serial.print(smsn);
+        Serial.print(F("***** SMS #")); Serial.print(smsnum);
         Serial.print(" ("); Serial.print(smslen); Serial.println(F(") bytes *****"));
         Serial.println(replybuffer);
         Serial.println(F("*****"));
@@ -454,7 +456,7 @@ void FONA(char command) {
     case 'p': {
         // send an SMS list of waypoints  ***********I still gotta do this one**********
 
-      /*  String msg1 = String(WaypointLAT[0], 6);
+        String msg1 = String(WaypointLAT[0], 6);
         String msg2 = String(WaypointLONG[0], 6);
         String msg3 = String(WaypointLAT[1], 6);
         String msg4 = String(WaypointLONG[1], 6);
@@ -475,28 +477,28 @@ void FONA(char command) {
         String msg19 = String(WaypointLAT[9], 6);
         String msg20 = String(WaypointLONG[9], 6);        
                 
-        String msg = "WP#: 0" + " \n " + "LAT: " + msg1 + " \n " + "LONG: " + msg2, 7 + "\n " + "\n " +
-                     "WP#: 1" + " \n " + "LAT: " + msg3 + " \n " + "LONG: " + msg4, 7 + "\n " + "\n " +
-                     "WP#: 2" + " \n " + "LAT: " + msg5 + " \n " + "LONG: " + msg6, 7 + "\n " + "\n " +                     
-                     "WP#: 3" + " \n " + "LAT: " + msg7 + " \n " + "LONG: " + msg8, 7 + "\n " + "\n " +
-                     "WP#: 4" + " \n " + "LAT: " + msg9 + " \n " + "LONG: " + msg10, 7 + "\n " + "\n " +                                          
-                     "WP#: 5" + " \n " + "LAT: " + msg11 + " \n " + "LONG: " + msg12, 7 + "\n " + "\n " +
-                     "WP#: 6" + " \n " + "LAT: " + msg13 + " \n " + "LONG: " + msg14, 7 + "\n " + "\n " +
-                     "WP#: 7" + " \n " + "LAT: " + msg15 + " \n " + "LONG: " + msg16, 7 + "\n " + "\n " +
-                     "WP#: 8" + " \n " + "LAT: " + msg17 + " \n " + "LONG: " + msg18, 7 + "\n " + "\n " +
-                     "WP#: 9" + " \n " + "LAT: " + msg19 + " \n " + "LONG: " + msg20, 7 + "\n " + "\n ";
+        String msg = "WP#: 0 \n LAT: " + msg1 + " \n LONG: " + msg2 + "\n \n "  +
+                     "WP#: 1" + " \n " + "LAT: " + msg3 + " \n " + "LONG: " + msg4 + "\n " + "\n " +
+                     "WP#: 2" + " \n " + "LAT: " + msg5 + " \n " + "LONG: " + msg6 + "\n " + "\n " +                     
+                     "WP#: 3" + " \n " + "LAT: " + msg7 + " \n " + "LONG: " + msg8 + "\n " + "\n " +
+                     "WP#: 4" + " \n " + "LAT: " + msg9 + " \n " + "LONG: " + msg10 + "\n " + "\n " +                                          
+                     "WP#: 5" + " \n " + "LAT: " + msg11 + " \n " + "LONG: " + msg12 + "\n " + "\n " +
+                     "WP#: 6" + " \n " + "LAT: " + msg13 + " \n " + "LONG: " + msg14 + "\n " + "\n " +
+                     "WP#: 7" + " \n " + "LAT: " + msg15 + " \n " + "LONG: " + msg16 + "\n " + "\n " +
+                     "WP#: 8" + " \n " + "LAT: " + msg17 + " \n " + "LONG: " + msg18 + "\n " + "\n " +
+                     "WP#: 9" + " \n " + "LAT: " + msg19 + " \n " + "LONG: " + msg20 + "\n " + "\n ";
 
 
         
-        char sendto[21], message[300];
+        char sendto[21], message[700];
         ltoa(ReplytoPhoneNumber, sendto, 10) ;
         for (int i = 0; i < msg.length() ; i++)
         {
-          msg.toCharArray(message, 300);
+          msg.toCharArray(message, 700);
 
         }
         break;
-        */
+        
       }
 
 
